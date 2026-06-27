@@ -1,14 +1,20 @@
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/errors/failures.dart';
+import '../../../../core/security/firebase_messaging_service.dart';
 import '../../../../core/storage/token_storage.dart';
 import '../models/user_dto.dart';
 
 class AuthSupabaseDataSource {
-  const AuthSupabaseDataSource(this._client, this._tokenStorage);
+  const AuthSupabaseDataSource(
+    this._client,
+    this._tokenStorage,
+    this._messagingService,
+  );
 
   final supabase.SupabaseClient _client;
   final TokenStorage _tokenStorage;
+  final FirebaseMessagingService _messagingService;
 
   Future<UserDto> login({
     required String email,
@@ -33,6 +39,7 @@ class AuthSupabaseDataSource {
         fallbackEmail: user.email ?? email.trim(),
       );
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
+      await _messagingService.registerCurrentDevice();
       return dto;
     } on supabase.AuthException catch (e) {
       throw AuthException(e.message);
@@ -93,6 +100,7 @@ class AuthSupabaseDataSource {
         fallbackEmail: user.email ?? email.trim(),
       );
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
+      await _messagingService.registerCurrentDevice();
       return dto;
     } on supabase.AuthException catch (e) {
       throw AuthException(e.message);
@@ -114,6 +122,7 @@ class AuthSupabaseDataSource {
         fallbackEmail: user.email ?? '',
       );
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
+      await _messagingService.registerCurrentDevice();
       return dto;
     } on supabase.PostgrestException {
       return null;

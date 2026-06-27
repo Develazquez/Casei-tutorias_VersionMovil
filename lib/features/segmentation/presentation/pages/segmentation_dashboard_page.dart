@@ -47,6 +47,11 @@ class _SegmentationDashboardPageState extends State<SegmentationDashboardPage> {
             child: Center(child: Text(auth.user?.name ?? '')),
           ),
           IconButton(
+            tooltip: 'Baúl encriptado',
+            onPressed: () => Navigator.pushNamed(context, '/security/vault'),
+            icon: const Icon(Icons.lock_outline),
+          ),
+          IconButton(
             tooltip: 'Cerrar sesión',
             onPressed: () async {
               await context.read<AuthProvider>().logout();

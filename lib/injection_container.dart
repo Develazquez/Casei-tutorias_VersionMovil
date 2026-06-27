@@ -3,6 +3,9 @@ import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'core/http/http_client.dart';
+import 'core/security/firebase_messaging_service.dart';
+import 'core/security/secure_storage_service.dart';
+import 'core/security/secure_vault_service.dart';
 import 'core/storage/token_storage.dart';
 import 'features/auth/data/datasources/auth_supabase_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -24,11 +27,16 @@ final sl = GetIt.instance;
 Future<void> init() async {
   sl
     ..registerLazySingleton<http.Client>(() => http.Client())
-    ..registerLazySingleton<TokenStorage>(() => TokenStorage())
+    ..registerLazySingleton<SecureStorageService>(() => SecureStorageService())
+    ..registerLazySingleton<FirebaseMessagingService>(
+      () => FirebaseMessagingService(sl()),
+    )
+    ..registerLazySingleton<SecureVaultService>(() => SecureVaultService(sl()))
+    ..registerLazySingleton<TokenStorage>(() => TokenStorage(sl()))
     ..registerLazySingleton<HttpClient>(() => HttpClient(sl(), sl()))
     ..registerLazySingleton<SupabaseClient>(() => Supabase.instance.client)
     ..registerLazySingleton<AuthSupabaseDataSource>(
-      () => AuthSupabaseDataSource(sl(), sl()),
+      () => AuthSupabaseDataSource(sl(), sl(), sl()),
     )
     ..registerLazySingleton<AuthRepository>(() => AuthRepositoryImpl(sl()))
     ..registerLazySingleton(() => LoginUseCase(sl()))

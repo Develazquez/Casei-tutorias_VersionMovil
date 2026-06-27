@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import 'core/navigation/app_navigator.dart';
 import 'features/auth/presentation/pages/auth_checker.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
+import 'features/security/presentation/pages/secure_vault_page.dart';
 import 'features/segmentation/presentation/pages/segmentation_dashboard_page.dart';
 
 class CaseiTutoriasApp extends StatelessWidget {
@@ -11,6 +13,7 @@ class CaseiTutoriasApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      navigatorKey: AppNavigator.key,
       title: 'CASEI Tutorías',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
@@ -24,6 +27,7 @@ class CaseiTutoriasApp extends StatelessWidget {
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),
         '/segmentation': (_) => const SegmentationDashboardPage(),
+        '/security/vault': (_) => const SecureVaultPage(),
       },
     );
   }
