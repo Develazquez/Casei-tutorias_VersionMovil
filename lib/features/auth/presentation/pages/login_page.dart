@@ -46,7 +46,7 @@ class _LoginPageState extends State<LoginPage> {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'CASEI Tutorías',
+                    'CASEI - Tutorías',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -82,6 +82,8 @@ class _LoginPageState extends State<LoginPage> {
                               password: _passwordController.text,
                             );
                             if (!mounted || !ok) return;
+                            await Future<void>.delayed(Duration.zero);
+                            if (!mounted) return;
                             Navigator.pushReplacementNamed(
                               context,
                               '/segmentation',

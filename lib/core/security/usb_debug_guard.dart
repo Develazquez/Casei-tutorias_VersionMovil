@@ -1,11 +1,14 @@
+import 'dart:async';
+
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 class UsbDebugGuard extends StatefulWidget {
-  const UsbDebugGuard({required this.child, super.key});
+  const UsbDebugGuard({required this.child, this.enabled = true, super.key});
 
   final Widget child;
+  final bool enabled;
 
   @override
   State<UsbDebugGuard> createState() => _UsbDebugGuardState();
@@ -23,7 +26,20 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    _checkEnvironment();
+    if (widget.enabled) {
+      _checkEnvironment();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant UsbDebugGuard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.enabled == oldWidget.enabled) return;
+    if (widget.enabled) {
+      _checkEnvironment();
+    } else if (_blocked) {
+      setState(() => _blocked = false);
+    }
   }
 
   @override
@@ -34,17 +50,18 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
+    if (widget.enabled && state == AppLifecycleState.resumed) {
       _checkEnvironment();
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final shouldBlock = widget.enabled && _blocked;
     return Stack(
       children: [
-        AbsorbPointer(absorbing: _blocked, child: widget.child),
-        if (_blocked)
+        AbsorbPointer(absorbing: shouldBlock, child: widget.child),
+        if (shouldBlock)
           Positioned.fill(
             child: ColoredBox(
               color: const Color(0xFF111827),
@@ -84,18 +101,26 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
   }
 
   Future<void> _checkEnvironment() async {
+    if (!widget.enabled) return;
     if (kDebugMode || defaultTargetPlatform != TargetPlatform.android) {
       return;
     }
     try {
-      final state = await _channel.invokeMapMethod<String, dynamic>(
-        'getEnvironmentState',
-      );
+      final state = await _channel
+          .invokeMapMethod<String, dynamic>('getEnvironmentState')
+          .timeout(const Duration(seconds: 3));
       final adbEnabled = state?['adbEnabled'] == true;
       final developerOptionsEnabled = state?['developerOptionsEnabled'] == true;
       if (!mounted) return;
+      if (!widget.enabled) return;
       setState(() => _blocked = adbEnabled || developerOptionsEnabled);
+    } on TimeoutException {
+      if (!mounted) return;
+      setState(() => _blocked = false);
     } on PlatformException {
+      if (!mounted) return;
+      setState(() => _blocked = false);
+    } catch (_) {
       if (!mounted) return;
       setState(() => _blocked = false);
     }

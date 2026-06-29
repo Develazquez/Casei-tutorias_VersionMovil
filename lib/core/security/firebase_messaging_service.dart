@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:firebase_core/firebase_core.dart';
 import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
@@ -28,9 +30,11 @@ class FirebaseMessagingService {
     try {
       await _ensureFirebaseInitialized();
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
-      await FirebaseMessaging.instance.requestPermission();
+      await FirebaseMessaging.instance.requestPermission().timeout(
+        const Duration(seconds: 5),
+      );
       _initialized = true;
-      await registerCurrentDevice();
+      unawaited(registerCurrentDevice());
       FirebaseMessaging.instance.onTokenRefresh.listen(_saveToken);
       FirebaseMessaging.onMessage.listen(_handleMessage);
       FirebaseMessaging.onMessageOpenedApp.listen(_handleMessage);
@@ -42,7 +46,9 @@ class FirebaseMessagingService {
   Future<void> registerCurrentDevice() async {
     if (!_initialized) return;
     try {
-      final token = await FirebaseMessaging.instance.getToken();
+      final token = await FirebaseMessaging.instance.getToken().timeout(
+        const Duration(seconds: 5),
+      );
       if (token == null || token.isEmpty) return;
       await _saveToken(token);
     } catch (error) {
@@ -56,13 +62,16 @@ class FirebaseMessagingService {
       final user = client.auth.currentUser;
       if (user == null) return;
 
-      await client.from('user_devices').upsert({
-        'user_id': user.id,
-        'fcm_token': token,
-        'platform': defaultTargetPlatform.name,
-        'last_seen_at': DateTime.now().toUtc().toIso8601String(),
-        'revoked_at': null,
-      }, onConflict: 'fcm_token');
+      await client
+          .from('user_devices')
+          .upsert({
+            'user_id': user.id,
+            'fcm_token': token,
+            'platform': defaultTargetPlatform.name,
+            'last_seen_at': DateTime.now().toUtc().toIso8601String(),
+            'revoked_at': null,
+          }, onConflict: 'fcm_token')
+          .timeout(const Duration(seconds: 5));
     } catch (error) {
       debugPrint('No fue posible registrar el dispositivo en Supabase: $error');
     }

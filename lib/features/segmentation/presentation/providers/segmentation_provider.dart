@@ -45,12 +45,14 @@ class SegmentationProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      _summary = await _getSummaryUseCase(role: role);
+      _summary = await _getSummaryUseCase(
+        role: role,
+      ).timeout(const Duration(seconds: 8));
       _students = await _getStudentsUseCase(
         role: role,
         profile: _selectedProfile,
         program: _selectedProgram,
-      );
+      ).timeout(const Duration(seconds: 8));
       _state = ViewState.success;
     } on AppException catch (e) {
       _errorMessage = e.message;
@@ -73,11 +75,16 @@ class SegmentationProvider extends ChangeNotifier {
   }
 
   Future<void> _reloadStudents({String? role}) async {
-    _students = await _getStudentsUseCase(
-      role: role,
-      profile: _selectedProfile,
-      program: _selectedProgram,
-    );
-    notifyListeners();
+    try {
+      _students = await _getStudentsUseCase(
+        role: role,
+        profile: _selectedProfile,
+        program: _selectedProgram,
+      ).timeout(const Duration(seconds: 8));
+      notifyListeners();
+    } catch (_) {
+      _errorMessage = 'No fue posible actualizar los filtros.';
+      notifyListeners();
+    }
   }
 }

@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 import '../../../../core/errors/failures.dart';
@@ -39,7 +41,7 @@ class AuthSupabaseDataSource {
         fallbackEmail: user.email ?? email.trim(),
       );
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
-      await _messagingService.registerCurrentDevice();
+      unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.AuthException catch (e) {
       throw AuthException(e.message);
@@ -100,7 +102,7 @@ class AuthSupabaseDataSource {
         fallbackEmail: user.email ?? email.trim(),
       );
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
-      await _messagingService.registerCurrentDevice();
+      unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.AuthException catch (e) {
       throw AuthException(e.message);
@@ -122,7 +124,7 @@ class AuthSupabaseDataSource {
         fallbackEmail: user.email ?? '',
       );
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
-      await _messagingService.registerCurrentDevice();
+      unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.PostgrestException {
       return null;

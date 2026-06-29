@@ -4,9 +4,10 @@ import 'package:flutter/material.dart';
 import 'package:geolocator/geolocator.dart';
 
 class FakeGpsGuard extends StatefulWidget {
-  const FakeGpsGuard({required this.child, super.key});
+  const FakeGpsGuard({required this.child, this.enabled = true, super.key});
 
   final Widget child;
+  final bool enabled;
 
   @override
   State<FakeGpsGuard> createState() => _FakeGpsGuardState();
@@ -19,7 +20,24 @@ class _FakeGpsGuardState extends State<FakeGpsGuard> {
   @override
   void initState() {
     super.initState();
-    _startMonitoring();
+    if (widget.enabled) {
+      _startMonitoring();
+    }
+  }
+
+  @override
+  void didUpdateWidget(covariant FakeGpsGuard oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.enabled == oldWidget.enabled) return;
+    if (widget.enabled) {
+      _startMonitoring();
+    } else {
+      _subscription?.cancel();
+      _subscription = null;
+      if (_mockLocationDetected) {
+        setState(() => _mockLocationDetected = false);
+      }
+    }
   }
 
   @override
@@ -30,10 +48,11 @@ class _FakeGpsGuardState extends State<FakeGpsGuard> {
 
   @override
   Widget build(BuildContext context) {
+    final shouldBlock = widget.enabled && _mockLocationDetected;
     return Stack(
       children: [
-        AbsorbPointer(absorbing: _mockLocationDetected, child: widget.child),
-        if (_mockLocationDetected)
+        AbsorbPointer(absorbing: shouldBlock, child: widget.child),
+        if (shouldBlock)
           const _SecurityBlocker(
             icon: Icons.location_off,
             title: 'Ubicación no confiable',
@@ -46,28 +65,41 @@ class _FakeGpsGuardState extends State<FakeGpsGuard> {
   }
 
   Future<void> _startMonitoring() async {
-    final serviceEnabled = await Geolocator.isLocationServiceEnabled();
-    if (!serviceEnabled) return;
+    if (_subscription != null || !widget.enabled) return;
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled()
+          .timeout(const Duration(seconds: 4));
+      if (!serviceEnabled) return;
 
-    var permission = await Geolocator.checkPermission();
-    if (permission == LocationPermission.denied) {
-      permission = await Geolocator.requestPermission();
-    }
-    if (permission == LocationPermission.denied ||
-        permission == LocationPermission.deniedForever) {
+      var permission = await Geolocator.checkPermission().timeout(
+        const Duration(seconds: 4),
+      );
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission().timeout(
+          const Duration(seconds: 10),
+        );
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      _subscription =
+          Geolocator.getPositionStream(
+            locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.low,
+              distanceFilter: 25,
+            ),
+          ).listen((position) {
+            if (!mounted) return;
+            if (!widget.enabled) return;
+            setState(() => _mockLocationDetected = position.isMocked);
+          });
+    } on TimeoutException {
+      return;
+    } catch (_) {
       return;
     }
-
-    _subscription =
-        Geolocator.getPositionStream(
-          locationSettings: const LocationSettings(
-            accuracy: LocationAccuracy.low,
-            distanceFilter: 25,
-          ),
-        ).listen((position) {
-          if (!mounted) return;
-          setState(() => _mockLocationDetected = position.isMocked);
-        });
   }
 }
 
