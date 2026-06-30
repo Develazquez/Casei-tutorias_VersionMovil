@@ -7,6 +7,7 @@ import '../providers/segmentation_provider.dart';
 import '../widgets/cluster_card.dart';
 import '../widgets/filter_bar.dart';
 import '../widgets/metric_tile.dart';
+import '../widgets/segmentation_search_box.dart';
 import '../widgets/student_list.dart';
 
 class SegmentationDashboardPage extends StatefulWidget {
@@ -140,6 +141,13 @@ class _SegmentationDashboardPageState extends State<SegmentationDashboardPage> {
                           provider.changeProfile(value, role: auth.user?.role),
                       onProgramChanged: (value) =>
                           provider.changeProgram(value, role: auth.user?.role),
+                    ),
+                    const SizedBox(height: 12),
+                    SegmentationSearchBox(
+                      query: provider.searchQuery,
+                      resultCount: provider.students.length,
+                      onChanged: provider.changeSearchQuery,
+                      onClear: provider.clearSearch,
                     ),
                     const SizedBox(height: 12),
                     StudentList(students: provider.students),

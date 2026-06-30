@@ -16,4 +16,12 @@ class AppConstants {
     'ENABLE_RUNTIME_SECURITY_GUARDS',
     defaultValue: true,
   );
+  static const String segmentationStorageBucket = String.fromEnvironment(
+    'SEGMENTATION_STORAGE_BUCKET',
+    defaultValue: 'academic-segmentation',
+  );
+  static const String segmentationStoragePrefix = String.fromEnvironment(
+    'SEGMENTATION_STORAGE_PREFIX',
+    defaultValue: 'latest',
+  );
 }

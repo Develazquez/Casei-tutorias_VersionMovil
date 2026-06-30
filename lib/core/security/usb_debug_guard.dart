@@ -21,6 +21,8 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
   );
 
   bool _blocked = false;
+  bool _adbEnabled = false;
+  bool _developerOptionsEnabled = false;
 
   @override
   void initState() {
@@ -58,6 +60,7 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
   @override
   Widget build(BuildContext context) {
     final shouldBlock = widget.enabled && _blocked;
+    final reasons = _blockedReasons;
     return Stack(
       children: [
         AbsorbPointer(absorbing: shouldBlock, child: widget.child),
@@ -74,7 +77,7 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                       const Icon(Icons.security, color: Colors.white, size: 76),
                       const SizedBox(height: 18),
                       Text(
-                        'ENTORNO NO SEGURO',
+                        'Acceso bloqueado por seguridad',
                         textAlign: TextAlign.center,
                         style: Theme.of(context).textTheme.headlineSmall
                             ?.copyWith(
@@ -84,11 +87,59 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'Desactiva la depuración USB y las opciones de desarrollador para acceder a CASEI Tutorías.',
+                        'CASEI Tutorías no puede ejecutarse mientras el dispositivo tenga herramientas de depuración activas.',
                         textAlign: TextAlign.center,
                         style: Theme.of(
                           context,
                         ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
+                      ),
+                      const SizedBox(height: 18),
+                      ...reasons.map(
+                        (reason) => Padding(
+                          padding: const EdgeInsets.only(bottom: 8),
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: const Color(0x1AFFFFFF),
+                              borderRadius: BorderRadius.circular(8),
+                              border: Border.all(color: Colors.white24),
+                            ),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(
+                                    Icons.error_outline,
+                                    color: Colors.white,
+                                    size: 18,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Flexible(
+                                    child: Text(
+                                      reason,
+                                      textAlign: TextAlign.center,
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.w700,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        'Desactiva la depuración USB y las opciones de desarrollador; después cierra y vuelve a abrir la app.',
+                        textAlign: TextAlign.center,
+                        style: Theme.of(
+                          context,
+                        ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
                       ),
                     ],
                   ),
@@ -113,7 +164,11 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
       final developerOptionsEnabled = state?['developerOptionsEnabled'] == true;
       if (!mounted) return;
       if (!widget.enabled) return;
-      setState(() => _blocked = adbEnabled || developerOptionsEnabled);
+      setState(() {
+        _adbEnabled = adbEnabled;
+        _developerOptionsEnabled = developerOptionsEnabled;
+        _blocked = adbEnabled || developerOptionsEnabled;
+      });
     } on TimeoutException {
       if (!mounted) return;
       setState(() => _blocked = false);
@@ -124,5 +179,15 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
       if (!mounted) return;
       setState(() => _blocked = false);
     }
+  }
+
+  List<String> get _blockedReasons {
+    final reasons = <String>[];
+    if (_adbEnabled) reasons.add('Depuración USB activada');
+    if (_developerOptionsEnabled) {
+      reasons.add('Opciones de desarrollador activadas');
+    }
+    if (reasons.isEmpty) reasons.add('Entorno de ejecución no seguro');
+    return reasons;
   }
 }

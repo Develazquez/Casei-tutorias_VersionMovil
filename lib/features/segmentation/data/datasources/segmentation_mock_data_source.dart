@@ -1,8 +1,9 @@
 import '../models/cluster_profile_dto.dart';
 import '../models/dashboard_summary_dto.dart';
 import '../models/segmentation_student_dto.dart';
+import 'segmentation_data_source.dart';
 
-class SegmentationMockDataSource {
+class SegmentationMockDataSource implements SegmentationDataSource {
   static const _clusters = [
     ClusterProfileDto(
       cluster: 0,
@@ -129,8 +130,48 @@ class SegmentationMockDataSource {
       delayedSubjects: 7,
       membershipScore: 0.73,
     ),
+    const SegmentationStudentDto(
+      id: '233141',
+      name: 'Valeria Sánchez Núñez',
+      program: 'Ingeniería Biomédica',
+      cohort: '2023',
+      period: '2024-1',
+      cluster: 1,
+      profileLabel: 'Atípico / buen promedio con baja asistencia',
+      averageGrade: 93.2,
+      attendanceRate: 45.8,
+      delayedSubjects: 1,
+      membershipScore: 0.69,
+    ),
+    const SegmentationStudentDto(
+      id: '213118',
+      name: 'Jorge Alberto Ramírez',
+      program: 'Ingeniería en Desarrollo de Software',
+      cohort: '2021',
+      period: '2024-1',
+      cluster: 3,
+      profileLabel: 'Riesgo académico moderado',
+      averageGrade: 72.4,
+      attendanceRate: 68.9,
+      delayedSubjects: 2,
+      membershipScore: 0.64,
+    ),
+    const SegmentationStudentDto(
+      id: '203077',
+      name: 'Fernanda López Castillo',
+      program: 'Ingeniería Agroindustrial',
+      cohort: '2020',
+      period: '2024-1',
+      cluster: 2,
+      profileLabel: 'Crítico / rezago alto',
+      averageGrade: 55.6,
+      attendanceRate: 44.1,
+      delayedSubjects: 5,
+      membershipScore: 0.76,
+    ),
   ];
 
+  @override
   Future<DashboardSummaryDto> getSummary({String? role}) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     final clusters = role == 'tutor'
@@ -162,6 +203,7 @@ class SegmentationMockDataSource {
     );
   }
 
+  @override
   Future<List<SegmentationStudentDto>> getStudents({
     String? role,
     String? profile,

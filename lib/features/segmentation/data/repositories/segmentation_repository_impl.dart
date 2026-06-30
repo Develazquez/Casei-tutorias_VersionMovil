@@ -1,13 +1,13 @@
 import '../../domain/entities/dashboard_summary_entity.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
 import '../../domain/repositories/segmentation_repository.dart';
-import '../datasources/segmentation_mock_data_source.dart';
+import '../datasources/segmentation_data_source.dart';
 import '../mappers/segmentation_mapper.dart';
 
 class SegmentationRepositoryImpl implements SegmentationRepository {
   const SegmentationRepositoryImpl(this._dataSource);
 
-  final SegmentationMockDataSource _dataSource;
+  final SegmentationDataSource _dataSource;
 
   @override
   Future<DashboardSummaryEntity> getSummary({String? role}) async {
