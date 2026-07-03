@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../core/constants/app_constants.dart';
+import '../../../../core/security/screen_capture_protection_service.dart';
 import '../../../../core/utils/view_state.dart';
 import '../providers/auth_provider.dart';
 import '../widgets/auth_text_field.dart';
@@ -12,17 +16,33 @@ class LoginPage extends StatefulWidget {
   State<LoginPage> createState() => _LoginPageState();
 }
 
-class _LoginPageState extends State<LoginPage> {
+class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   final _emailController = TextEditingController(
     text: 'direccion@upchiapas.edu.mx',
   );
   final _passwordController = TextEditingController();
 
   @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _applyScreenCaptureProtection(enabled: true);
+  }
+
+  @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    _applyScreenCaptureProtection(enabled: false);
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      _applyScreenCaptureProtection(enabled: true);
+    }
   }
 
   @override
@@ -121,5 +141,10 @@ class _LoginPageState extends State<LoginPage> {
         ),
       ),
     );
+  }
+
+  void _applyScreenCaptureProtection({required bool enabled}) {
+    if (!AppConstants.enableScreenCaptureProtection) return;
+    unawaited(ScreenCaptureProtectionService.apply(enabled: enabled));
   }
 }

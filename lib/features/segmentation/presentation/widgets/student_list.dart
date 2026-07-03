@@ -5,6 +5,8 @@ import '../../domain/entities/segmentation_student_entity.dart';
 class StudentList extends StatelessWidget {
   const StudentList({required this.students, super.key});
 
+  static const _maxVisibleItems = 80;
+
   final List<SegmentationStudentEntity> students;
 
   @override
@@ -18,6 +20,9 @@ class StudentList extends StatelessWidget {
         ),
       );
     }
+
+    final visibleStudents = students.take(_maxVisibleItems).toList();
+    final hiddenCount = students.length - visibleStudents.length;
 
     return Card(
       elevation: 0,
@@ -39,7 +44,7 @@ class StudentList extends StatelessWidget {
             ),
           ),
           const Divider(height: 1),
-          ...students.map(
+          ...visibleStudents.map(
             (student) => ListTile(
               leading: CircleAvatar(child: Text('C${student.cluster}')),
               title: Text(student.name),
@@ -64,6 +69,20 @@ class StudentList extends StatelessWidget {
               ),
             ),
           ),
+          if (hiddenCount > 0) ...[
+            const Divider(height: 1),
+            Padding(
+              padding: const EdgeInsets.all(14),
+              child: Text(
+                'Mostrando ${visibleStudents.length} de ${students.length} registros. Refina la búsqueda para acotar resultados.',
+                textAlign: TextAlign.center,
+                style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
+                  fontWeight: FontWeight.w600,
+                ),
+              ),
+            ),
+          ],
         ],
       ),
     );

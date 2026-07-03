@@ -11,12 +11,14 @@ class SessionGuard extends StatefulWidget {
   const SessionGuard({
     required this.child,
     required this.secureStorage,
+    this.enabled = true,
     this.timeout = const Duration(minutes: 10),
     super.key,
   });
 
   final Widget child;
   final SecureStorageService secureStorage;
+  final bool enabled;
   final Duration timeout;
 
   @override
@@ -34,6 +36,11 @@ class _SessionGuardState extends State<SessionGuard> {
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.enabled) {
+      _timer?.cancel();
+      return widget.child;
+    }
+
     final isAuthenticated = context.select<AuthProvider, bool>(
       (auth) => auth.isAuthenticated,
     );

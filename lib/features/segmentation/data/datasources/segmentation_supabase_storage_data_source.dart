@@ -64,7 +64,7 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
       if (program != null && program != 'Todos') {
         result = result.where((student) => student.program == program);
       }
-      return result.take(200).toList();
+      return result.toList();
     } catch (_) {
       return _fallback.getStudents(
         role: role,
@@ -170,7 +170,6 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
     List<SegmentationStudentDto> students, {
     String? role,
   }) {
-    if (role == 'tutor') return students.take(80).toList();
     return students;
   }
 

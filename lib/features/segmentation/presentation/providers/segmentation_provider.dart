@@ -128,7 +128,22 @@ class SegmentationProvider extends ChangeNotifier {
   }
 
   int _scoreStudent(SegmentationStudentEntity student, List<String> terms) {
-    final document = _normalize(
+    final normalizedProgram = _normalize(student.program);
+    final normalizedProfile = _normalize(student.profileLabel);
+    final document = _searchDocument(student);
+
+    var score = 0;
+    for (final term in terms) {
+      if (normalizedProgram.contains(term)) score += 5;
+      if (normalizedProfile.contains(term)) score += 4;
+      if (document.contains(term)) score += 2;
+    }
+    if (terms.every(document.contains)) score += 4;
+    return score;
+  }
+
+  String _searchDocument(SegmentationStudentEntity student) {
+    return _normalize(
       [
         student.id,
         student.name,
@@ -137,19 +152,19 @@ class SegmentationProvider extends ChangeNotifier {
         student.period,
         student.profileLabel,
         'cluster ${student.cluster}',
-        if (student.averageGrade < 60) 'critico criticos promedio bajo',
+        if (student.program.contains('Biomédica')) 'biomedica biomedical',
+        if (student.program.contains('Software')) 'software desarrollo',
+        if (student.program.contains('Energía')) 'energia',
+        if (student.program.contains('Agroindustrial')) 'agroindustrial',
+        if (student.averageGrade < 60)
+          'critico criticos promedio bajo reprobacion',
         if (student.averageGrade >= 85) 'buen promedio alto desempeno',
-        if (student.attendanceRate < 60) 'baja asistencia ausentismo',
-        if (student.delayedSubjects >= 3) 'rezago alto atraso academico',
+        if (student.attendanceRate < 60)
+          'baja asistencia ausentismo asistencias',
+        if (student.delayedSubjects >= 3)
+          'rezago rezagos alto atraso academico',
       ].join(' '),
     );
-
-    var score = 0;
-    for (final term in terms) {
-      if (document.contains(term)) score += 2;
-    }
-    if (terms.every(document.contains)) score += 4;
-    return score;
   }
 
   String _normalize(String value) {

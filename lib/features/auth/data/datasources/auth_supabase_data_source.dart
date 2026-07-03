@@ -17,16 +17,16 @@ class AuthSupabaseDataSource {
   final supabase.SupabaseClient _client;
   final TokenStorage _tokenStorage;
   final FirebaseMessagingService _messagingService;
+  static const _networkTimeout = Duration(seconds: 12);
 
   Future<UserDto> login({
     required String email,
     required String password,
   }) async {
     try {
-      final response = await _client.auth.signInWithPassword(
-        email: email.trim(),
-        password: password,
-      );
+      final response = await _client.auth
+          .signInWithPassword(email: email.trim(), password: password)
+          .timeout(_networkTimeout);
 
       final user = response.user;
       final session = response.session;
@@ -47,6 +47,8 @@ class AuthSupabaseDataSource {
       throw AuthException(e.message);
     } on supabase.PostgrestException catch (e) {
       throw ServerException(e.message);
+    } on TimeoutException {
+      throw const ServerException('El servidor tardó demasiado en responder.');
     }
   }
 
@@ -65,10 +67,9 @@ class AuthSupabaseDataSource {
     }
 
     try {
-      final response = await _client.auth.signUp(
-        email: email.trim(),
-        password: password,
-      );
+      final response = await _client.auth
+          .signUp(email: email.trim(), password: password)
+          .timeout(_networkTimeout);
 
       final user = response.user;
       final session = response.session;
@@ -94,7 +95,8 @@ class AuthSupabaseDataSource {
             'activo': true,
           })
           .select()
-          .single();
+          .single()
+          .timeout(_networkTimeout);
 
       final dto = _dtoFromProfile(
         Map<String, dynamic>.from(profile),
@@ -108,6 +110,8 @@ class AuthSupabaseDataSource {
       throw AuthException(e.message);
     } on supabase.PostgrestException catch (e) {
       throw ServerException(e.message);
+    } on TimeoutException {
+      throw const ServerException('El servidor tardó demasiado en responder.');
     }
   }
 
@@ -117,7 +121,7 @@ class AuthSupabaseDataSource {
       final session = _client.auth.currentSession;
       if (user == null || session == null) return null;
 
-      final profile = await _fetchProfile(user.id);
+      final profile = await _fetchProfile(user.id).timeout(_networkTimeout);
       final dto = _dtoFromProfile(
         profile,
         token: session.accessToken,
@@ -128,11 +132,13 @@ class AuthSupabaseDataSource {
       return dto;
     } on supabase.PostgrestException {
       return null;
+    } on TimeoutException {
+      return null;
     }
   }
 
   Future<void> logout() async {
-    await _client.auth.signOut();
+    await _client.auth.signOut().timeout(_networkTimeout);
     await _tokenStorage.clear();
   }
 
@@ -141,7 +147,8 @@ class AuthSupabaseDataSource {
         .from('profiles')
         .select('id, nombre, apellidos, email, rol, telefono, activo')
         .eq('id', userId)
-        .single();
+        .single()
+        .timeout(_networkTimeout);
 
     return Map<String, dynamic>.from(profile);
   }

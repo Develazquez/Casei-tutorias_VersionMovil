@@ -54,12 +54,15 @@ class _SecureVaultPageState extends State<SecureVaultPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'La información se guarda con el almacén seguro del dispositivo.',
+                    _vaultService.isEnabled
+                        ? 'La información se guarda con el almacén seguro del dispositivo.'
+                        : 'El baúl está desactivado temporalmente.',
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
                   const SizedBox(height: 18),
                   TextField(
                     controller: _passwordController,
+                    enabled: _vaultService.isEnabled,
                     obscureText: true,
                     decoration: const InputDecoration(
                       labelText: 'Contraseña guardada',
@@ -70,6 +73,7 @@ class _SecureVaultPageState extends State<SecureVaultPage> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _notesController,
+                    enabled: _vaultService.isEnabled,
                     maxLines: 5,
                     decoration: const InputDecoration(
                       labelText: 'Notas privadas',
@@ -80,6 +84,7 @@ class _SecureVaultPageState extends State<SecureVaultPage> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _phoneController,
+                    enabled: _vaultService.isEnabled,
                     keyboardType: TextInputType.phone,
                     decoration: const InputDecoration(
                       labelText: 'Teléfono',
@@ -90,6 +95,7 @@ class _SecureVaultPageState extends State<SecureVaultPage> {
                   const SizedBox(height: 12),
                   TextField(
                     controller: _cardController,
+                    enabled: _vaultService.isEnabled,
                     keyboardType: TextInputType.number,
                     obscureText: true,
                     decoration: const InputDecoration(
@@ -100,7 +106,9 @@ class _SecureVaultPageState extends State<SecureVaultPage> {
                   ),
                   const SizedBox(height: 18),
                   FilledButton.icon(
-                    onPressed: _saving ? null : _saveVault,
+                    onPressed: _saving || !_vaultService.isEnabled
+                        ? null
+                        : _saveVault,
                     icon: _saving
                         ? const SizedBox.square(
                             dimension: 18,
@@ -111,7 +119,9 @@ class _SecureVaultPageState extends State<SecureVaultPage> {
                   ),
                   const SizedBox(height: 8),
                   OutlinedButton.icon(
-                    onPressed: _saving ? null : _clearVault,
+                    onPressed: _saving || !_vaultService.isEnabled
+                        ? null
+                        : _clearVault,
                     icon: const Icon(Icons.delete_outline),
                     label: const Text('Vaciar baúl'),
                   ),

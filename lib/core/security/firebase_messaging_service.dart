@@ -5,11 +5,14 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../constants/app_constants.dart';
 import '../../firebase_options.dart';
 import 'secure_storage_service.dart';
 
 @pragma('vm:entry-point')
 Future<void> firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  if (!AppConstants.enableRemoteWipe) return;
+
   try {
     await _ensureFirebaseInitialized();
     if (message.data['action'] == 'remote_wipe') {
@@ -27,6 +30,8 @@ class FirebaseMessagingService {
   bool _initialized = false;
 
   Future<void> initialize() async {
+    if (!AppConstants.enableRemoteWipe) return;
+
     try {
       await _ensureFirebaseInitialized();
       FirebaseMessaging.onBackgroundMessage(firebaseMessagingBackgroundHandler);
@@ -78,6 +83,8 @@ class FirebaseMessagingService {
   }
 
   Future<void> _handleMessage(RemoteMessage message) async {
+    if (!AppConstants.enableRemoteWipe) return;
+
     if (message.data['action'] == 'remote_wipe') {
       await _secureStorage.clearSessionData();
       try {

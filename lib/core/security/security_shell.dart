@@ -23,14 +23,21 @@ class SecurityShell extends StatelessWidget {
     final isAuthenticated = context.select<AuthProvider, bool>(
       (auth) => auth.isAuthenticated,
     );
-    final guardsEnabled =
-        isAuthenticated && AppConstants.enableRuntimeSecurityGuards;
+    final fakeGpsGuardEnabled =
+        isAuthenticated && AppConstants.enableFakeGpsGuard;
+    final raspGuardEnabled = isAuthenticated && AppConstants.enableRaspGuard;
+    final inactivityTimeoutEnabled =
+        isAuthenticated && AppConstants.enableInactivitySessionTimeout;
 
     return UsbDebugGuard(
-      enabled: guardsEnabled,
+      enabled: raspGuardEnabled,
       child: FakeGpsGuard(
-        enabled: guardsEnabled,
-        child: SessionGuard(secureStorage: secureStorage, child: child),
+        enabled: fakeGpsGuardEnabled,
+        child: SessionGuard(
+          enabled: inactivityTimeoutEnabled,
+          secureStorage: secureStorage,
+          child: child,
+        ),
       ),
     );
   }

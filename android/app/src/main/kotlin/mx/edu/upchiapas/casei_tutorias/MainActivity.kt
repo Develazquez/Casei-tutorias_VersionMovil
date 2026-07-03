@@ -12,7 +12,6 @@ class MainActivity : FlutterActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
@@ -20,6 +19,11 @@ class MainActivity : FlutterActivity() {
         MethodChannel(flutterEngine.dartExecutor.binaryMessenger, securityChannel)
             .setMethodCallHandler { call, result ->
                 when (call.method) {
+                    "setScreenCaptureProtection" -> {
+                        val enabled = call.argument<Boolean>("enabled") ?: false
+                        setScreenCaptureProtection(enabled)
+                        result.success(null)
+                    }
                     "getEnvironmentState" -> result.success(
                         mapOf(
                             "adbEnabled" to isSettingEnabled(Settings.Global.ADB_ENABLED),
@@ -35,5 +39,13 @@ class MainActivity : FlutterActivity() {
 
     private fun isSettingEnabled(settingName: String): Boolean {
         return Settings.Global.getInt(contentResolver, settingName, 0) == 1
+    }
+
+    private fun setScreenCaptureProtection(enabled: Boolean) {
+        if (enabled) {
+            window.addFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        } else {
+            window.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
+        }
     }
 }

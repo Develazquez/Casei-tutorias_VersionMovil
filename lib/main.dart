@@ -18,7 +18,9 @@ Future<void> main() async {
     publishableKey: AppConstants.supabaseAnonKey,
   );
   await di.init();
-  await di.sl<FirebaseMessagingService>().initialize();
+  if (AppConstants.enableRemoteWipe) {
+    await di.sl<FirebaseMessagingService>().initialize();
+  }
 
   runApp(
     MultiProvider(
