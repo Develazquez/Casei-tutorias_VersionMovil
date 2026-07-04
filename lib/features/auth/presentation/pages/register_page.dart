@@ -65,7 +65,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 14),
                   Text(
-                    'Registro CASEI',
+                    'Registro CACEI',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineSmall?.copyWith(
                       fontWeight: FontWeight.w800,
@@ -73,7 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   ),
                   const SizedBox(height: 8),
                   Text(
-                    'Usa tu correo institucional para crear una cuenta vinculada al backend de CASEI.',
+                    'Usa tu correo institucional para crear una cuenta vinculada al backend de CACEI.',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.bodyMedium,
                   ),
@@ -128,7 +128,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   if (_role == 'alumno') ...[
                     const SizedBox(height: 10),
                     Text(
-                      'Los alumnos se importan desde el panel del Director en CASEI.',
+                      'Los alumnos se importan desde el panel del Director en CACEI.',
                       style: TextStyle(
                         color: Theme.of(context).colorScheme.error,
                       ),

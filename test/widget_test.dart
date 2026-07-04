@@ -37,7 +37,7 @@ void main() {
       ),
     );
 
-    expect(find.text('CASEI - Tutorías'), findsOneWidget);
+    expect(find.text('CACEI - Tutorías'), findsOneWidget);
     expect(find.text('Dashboard de segmentación académica'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
   });

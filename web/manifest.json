@@ -1,11 +1,11 @@
 {
-    "name": "casei_tutorias",
-    "short_name": "casei_tutorias",
+    "name": "CACEI Tutorías",
+    "short_name": "CACEI",
     "start_url": ".",
     "display": "standalone",
     "background_color": "#0175C2",
     "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "description": "CACEI Tutorías",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

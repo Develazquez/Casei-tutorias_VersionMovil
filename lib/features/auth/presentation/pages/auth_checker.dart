@@ -35,7 +35,7 @@ class _AuthCheckerState extends State<AuthChecker> {
       body: Center(
         child: state == ViewState.loading
             ? const CircularProgressIndicator()
-            : const Text('Preparando CASEI Tutorías...'),
+            : const Text('Preparando CACEI Tutorías...'),
       ),
     );
   }

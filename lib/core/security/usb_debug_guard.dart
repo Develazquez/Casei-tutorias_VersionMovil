@@ -87,7 +87,7 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                       ),
                       const SizedBox(height: 10),
                       Text(
-                        'CASEI Tutorías no puede ejecutarse mientras el dispositivo tenga herramientas de depuración activas.',
+                        'CACEI Tutorías no puede ejecutarse mientras el dispositivo tenga herramientas de depuración activas.',
                         textAlign: TextAlign.center,
                         style: Theme.of(
                           context,

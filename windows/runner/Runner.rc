@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "mx.edu.upchiapas" "\0"
-            VALUE "FileDescription", "casei_tutorias" "\0"
+            VALUE "FileDescription", "CACEI Tutorías" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
             VALUE "InternalName", "casei_tutorias" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2026 mx.edu.upchiapas. All rights reserved." "\0"
             VALUE "OriginalFilename", "casei_tutorias.exe" "\0"
-            VALUE "ProductName", "casei_tutorias" "\0"
+            VALUE "ProductName", "CACEI Tutorías" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

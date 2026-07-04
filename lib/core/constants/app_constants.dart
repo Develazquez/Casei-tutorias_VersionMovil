@@ -1,7 +1,7 @@
 class AppConstants {
   const AppConstants._();
 
-  static const String appName = 'CASEI Tutorías';
+  static const String appName = 'CACEI Tutorías';
   static const String apiBaseUrl = 'http://localhost:8000/api/v1';
   static const String supabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',

@@ -14,7 +14,7 @@ class CaseiTutoriasApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       navigatorKey: AppNavigator.key,
-      title: 'CASEI Tutorías',
+      title: 'CACEI Tutorías',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         useMaterial3: true,

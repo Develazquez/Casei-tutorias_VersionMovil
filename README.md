@@ -1,6 +1,6 @@
-# CASEI Tutorías
+# CACEI Tutorías
 
-Aplicación Flutter para visualizar la segmentación académica no supervisada del ecosistema CASEI.
+Aplicación Flutter para visualizar la segmentación académica no supervisada del ecosistema CACEI.
 
 ## Arquitectura
 

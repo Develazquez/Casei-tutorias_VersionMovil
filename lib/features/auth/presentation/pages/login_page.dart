@@ -66,7 +66,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                   ),
                   const SizedBox(height: 18),
                   Text(
-                    'CASEI - Tutorías',
+                    'CACEI - Tutorías',
                     textAlign: TextAlign.center,
                     style: Theme.of(context).textTheme.headlineMedium?.copyWith(
                       fontWeight: FontWeight.w800,
