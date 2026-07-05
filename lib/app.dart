@@ -8,7 +8,7 @@ import 'features/auth/presentation/pages/auth_checker.dart';
 import 'features/auth/presentation/pages/login_page.dart';
 import 'features/auth/presentation/pages/register_page.dart';
 import 'features/security/presentation/pages/secure_vault_page.dart';
-import 'features/segmentation/presentation/pages/segmentation_dashboard_page.dart';
+import 'features/segmentation/presentation/pages/segmentation_dashboard_v2_page.dart';
 
 class CaseiTutoriasApp extends StatelessWidget {
   const CaseiTutoriasApp({super.key});
@@ -35,7 +35,7 @@ class CaseiTutoriasApp extends StatelessWidget {
         '/': (_) => const AuthChecker(),
         '/login': (_) => const LoginPage(),
         '/register': (_) => const RegisterPage(),
-        '/segmentation': (_) => const SegmentationDashboardPage(),
+        '/segmentation': (_) => const SegmentationDashboardV2Page(),
         '/security/vault': (_) => const SecureVaultPage(),
       },
     );

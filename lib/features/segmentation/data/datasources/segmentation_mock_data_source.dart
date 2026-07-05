@@ -211,9 +211,10 @@ class SegmentationMockDataSource implements SegmentationDataSource {
   }) async {
     await Future<void>.delayed(const Duration(milliseconds: 350));
     Iterable<SegmentationStudentDto> result = _students;
-    if (role == 'tutor') {
-      result = result.take(4);
-    }
+
+    // Se eliminó el truncamiento artificial (take(4)) para permitir visualizar 
+    // la lista completa de alumnos disponible en la fuente.
+
     if (profile != null && profile != 'Todos') {
       result = result.where((student) => student.profileLabel == profile);
     }

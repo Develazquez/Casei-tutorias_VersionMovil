@@ -5,6 +5,7 @@ class AuthTextField extends StatelessWidget {
     required this.controller,
     required this.label,
     required this.icon,
+    this.hint,
     this.keyboardType,
     this.obscureText = false,
     super.key,
@@ -13,6 +14,7 @@ class AuthTextField extends StatelessWidget {
   final TextEditingController controller;
   final String label;
   final IconData icon;
+  final String? hint;
   final TextInputType? keyboardType;
   final bool obscureText;
 
@@ -24,6 +26,7 @@ class AuthTextField extends StatelessWidget {
       obscureText: obscureText,
       decoration: InputDecoration(
         labelText: label,
+        hintText: hint,
         prefixIcon: Icon(icon),
         border: const OutlineInputBorder(),
       ),
