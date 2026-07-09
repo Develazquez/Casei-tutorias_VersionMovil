@@ -28,15 +28,25 @@ class AcademicRadarChart extends StatelessWidget {
           const Center(
             child: Column(
               children: [
-                Icon(Icons.radar_rounded, size: 80, color: SegmentationDashboardColors.border),
+                Icon(
+                  Icons.radar_rounded,
+                  size: 80,
+                  color: SegmentationDashboardColors.border,
+                ),
                 SizedBox(height: 12),
                 Text(
                   'Datos insuficientes para generar el radar',
-                  style: TextStyle(fontSize: 12, color: SegmentationDashboardColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: SegmentationDashboardColors.textSecondary,
+                  ),
                 ),
                 Text(
                   '(Avance, Créditos y Puntualidad no disponibles)',
-                  style: TextStyle(fontSize: 10, color: SegmentationDashboardColors.textSecondary),
+                  style: TextStyle(
+                    fontSize: 10,
+                    color: SegmentationDashboardColors.textSecondary,
+                  ),
                 ),
               ],
             ),

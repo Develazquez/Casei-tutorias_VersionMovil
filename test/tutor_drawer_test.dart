@@ -51,9 +51,7 @@ void main() {
             ),
           ),
         ],
-        child: const MaterialApp(
-          home: SegmentationDashboardPage(),
-        ),
+        child: const MaterialApp(home: SegmentationDashboardPage()),
       ),
     );
 
@@ -73,10 +71,8 @@ void main() {
     expect(find.textContaining('CACEI'), findsOneWidget);
     expect(find.text('Tutor'), findsAtLeastNWidgets(1));
 
-    // 3. El drawer contiene las opciones solicitadas.
-    expect(find.textContaining('Dashboard'), findsOneWidget);
-    expect(find.textContaining('Mi Grupo'), findsOneWidget);
-    expect(find.textContaining('Asistencias'), findsOneWidget);
+    // 3. El drawer contiene la opción de navegación disponible actualmente.
+    expect(find.textContaining('Segmentación Tutorados'), findsOneWidget);
 
     // 4. Pulsar el botón de cierre cierra el drawer.
     final closeButton = find.byTooltip('Cerrar menú de navegación');
@@ -92,11 +88,21 @@ class _FakeAuthRepository implements AuthRepository {
   @override
   Future<UserEntity?> getCurrentUser() async => _user;
   @override
-  Future<UserEntity> login({required String email, required String password}) async => _user;
+  Future<UserEntity> login({
+    required String email,
+    required String password,
+  }) async => _user;
   @override
   Future<void> logout() async {}
   @override
-  Future<UserEntity> register({required String email, required String password, required String nombre, required String apellidos, required String role, String? telefono}) async => _user;
+  Future<UserEntity> register({
+    required String email,
+    required String password,
+    required String nombre,
+    required String apellidos,
+    required String role,
+    String? telefono,
+  }) async => _user;
 
   static const _user = UserEntity(
     id: 'test-tutor',
@@ -108,14 +114,20 @@ class _FakeAuthRepository implements AuthRepository {
 
 class _FakeSegmentationRepository implements SegmentationRepository {
   @override
-  Future<DashboardSummaryEntity> getSummary({String? role}) async => const DashboardSummaryEntity(
-    totalStudents: 10,
-    averageGrade: 8.5,
-    attendanceRate: 90.0,
-    riskStudents: 2,
-    clusters: [],
-  );
+  Future<DashboardSummaryEntity> getSummary({String? role}) async =>
+      const DashboardSummaryEntity(
+        totalStudents: 10,
+        averageGrade: 8.5,
+        attendanceRate: 90.0,
+        riskStudents: 2,
+        clusters: [],
+      );
 
   @override
-  Future<List<SegmentationStudentEntity>> getStudents({String? role, String? profile, String? program, String? query}) async => [];
+  Future<List<SegmentationStudentEntity>> getStudents({
+    String? role,
+    String? profile,
+    String? program,
+    String? query,
+  }) async => [];
 }

@@ -13,9 +13,12 @@ class SegmentationSearchViewModel extends ChangeNotifier {
 
   final SegmentationProvider _sourceProvider;
   final _searchUseCase = SearchTutoradosUseCase();
-  
+
   TutorSearchQuery _query = const TutorSearchQuery();
-  TutorSearchResult _result = const TutorSearchResult(students: [], totalCount: 0);
+  TutorSearchResult _result = const TutorSearchResult(
+    students: [],
+    totalCount: 0,
+  );
   Timer? _debounce;
 
   TutorSearchQuery get query => _query;
@@ -86,8 +89,11 @@ class SegmentationSearchViewModel extends ChangeNotifier {
 
   // Contadores para los chips de filtro
   int getCountByProfile(String profile) {
-    return _sourceProvider.students.where((s) => 
-      s.profileLabel.toLowerCase().contains(profile.toLowerCase())).length;
+    return _sourceProvider.students
+        .where(
+          (s) => s.profileLabel.toLowerCase().contains(profile.toLowerCase()),
+        )
+        .length;
   }
 
   int getCountByGeneration(String gen) {
@@ -95,7 +101,11 @@ class SegmentationSearchViewModel extends ChangeNotifier {
   }
 
   int getLowAttendanceCount() {
-    return _sourceProvider.students.where((s) => 
-      s.attendanceRate < SearchTutoradosUseCase.lowAttendanceThreshold).length;
+    return _sourceProvider.students
+        .where(
+          (s) =>
+              s.attendanceRate < SearchTutoradosUseCase.lowAttendanceThreshold,
+        )
+        .length;
   }
 }

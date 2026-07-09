@@ -4,10 +4,7 @@ import '../../theme/segmentation_dashboard_colors.dart';
 import 'experiment_results_table.dart';
 
 class ExperimentalComparisonCard extends StatelessWidget {
-  const ExperimentalComparisonCard({
-    required this.experiments,
-    super.key,
-  });
+  const ExperimentalComparisonCard({required this.experiments, super.key});
 
   final List<ModelExperimentResult> experiments;
 
@@ -71,8 +68,8 @@ class _BarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = experiment.selected 
-        ? SegmentationDashboardColors.primaryBlue 
+    final color = experiment.selected
+        ? SegmentationDashboardColors.primaryBlue
         : SegmentationDashboardColors.border;
 
     return Column(
@@ -89,7 +86,10 @@ class _BarItem extends StatelessWidget {
         const SizedBox(height: 4),
         Text(
           'K=${experiment.k}',
-          style: const TextStyle(fontSize: 9, color: SegmentationDashboardColors.textSecondary),
+          style: const TextStyle(
+            fontSize: 9,
+            color: SegmentationDashboardColors.textSecondary,
+          ),
         ),
       ],
     );

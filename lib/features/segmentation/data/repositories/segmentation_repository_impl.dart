@@ -1,4 +1,5 @@
 import '../../domain/entities/dashboard_summary_entity.dart';
+import '../../domain/entities/segmentation_model_artifacts_entity.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
 import '../../domain/repositories/segmentation_repository.dart';
 import '../datasources/segmentation_data_source.dart';
@@ -27,5 +28,11 @@ class SegmentationRepositoryImpl implements SegmentationRepository {
       program: program,
     );
     return dtos.map(SegmentationMapper.studentToEntity).toList();
+  }
+
+  @override
+  Future<SegmentationModelArtifactsEntity> getModelArtifacts() async {
+    final dto = await _dataSource.getModelArtifacts();
+    return SegmentationMapper.modelArtifactsToEntity(dto);
   }
 }

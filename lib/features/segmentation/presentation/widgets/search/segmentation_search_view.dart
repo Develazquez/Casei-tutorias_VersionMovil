@@ -14,9 +14,8 @@ class SegmentationSearchView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => SegmentationSearchViewModel(
-        context.read<SegmentationProvider>(),
-      ),
+      create: (context) =>
+          SegmentationSearchViewModel(context.read<SegmentationProvider>()),
       child: Consumer<SegmentationSearchViewModel>(
         builder: (context, viewModel, child) {
           return ListView(
@@ -25,15 +24,15 @@ class SegmentationSearchView extends StatelessWidget {
               const Text(
                 'Búsqueda',
                 style: TextStyle(
-                  fontSize: 20, 
-                  fontWeight: FontWeight.bold, 
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
                   color: SegmentationDashboardColors.textPrimary,
                 ),
               ),
               const Text(
                 'Consulta y filtra la información de tus tutorados',
                 style: TextStyle(
-                  fontSize: 12, 
+                  fontSize: 12,
                   color: SegmentationDashboardColors.textSecondary,
                 ),
               ),

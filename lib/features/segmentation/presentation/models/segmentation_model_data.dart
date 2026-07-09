@@ -41,11 +41,7 @@ class ModelExperimentResult {
 }
 
 class PcaPoint {
-  const PcaPoint({
-    required this.x,
-    required this.y,
-    required this.label,
-  });
+  const PcaPoint({required this.x, required this.y, required this.label});
 
   final double x;
   final double y;

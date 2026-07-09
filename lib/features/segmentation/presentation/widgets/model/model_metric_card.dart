@@ -3,10 +3,7 @@ import '../../models/segmentation_model_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class ModelMetricCard extends StatelessWidget {
-  const ModelMetricCard({
-    required this.metric,
-    super.key,
-  });
+  const ModelMetricCard({required this.metric, super.key});
 
   final ModelQualityMetric metric;
 
@@ -32,8 +29,11 @@ class ModelMetricCard extends StatelessWidget {
                   color: SegmentationDashboardColors.background,
                   shape: BoxShape.circle,
                 ),
-                child: Icon(metric.icon,
-                    color: SegmentationDashboardColors.primaryBlue, size: 16),
+                child: Icon(
+                  metric.icon,
+                  color: SegmentationDashboardColors.primaryBlue,
+                  size: 16,
+                ),
               ),
               Icon(
                 metric.isUpGood

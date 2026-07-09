@@ -38,7 +38,9 @@ class PriorityStudentsCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                 decoration: BoxDecoration(
-                  color: SegmentationDashboardColors.redCritical.withOpacity(0.1),
+                  color: SegmentationDashboardColors.redCritical.withValues(
+                    alpha: 0.1,
+                  ),
                   borderRadius: BorderRadius.circular(12),
                 ),
                 child: Text(
@@ -54,14 +56,25 @@ class PriorityStudentsCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           if (students.isEmpty)
-            const Center(child: Text('No hay alumnos prioritarios.', style: TextStyle(fontSize: 12, color: Colors.grey)))
+            const Center(
+              child: Text(
+                'No hay alumnos prioritarios.',
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            )
           else
             ...students.map((s) => _PriorityStudentTile(student: s)),
           const SizedBox(height: 12),
           Center(
             child: TextButton(
               onPressed: () {}, // No implementado aún
-              child: const Text('Ver lista completa', style: TextStyle(fontSize: 12, color: SegmentationDashboardColors.primaryBlue)),
+              child: const Text(
+                'Ver lista completa',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: SegmentationDashboardColors.primaryBlue,
+                ),
+              ),
             ),
           ),
         ],
@@ -77,7 +90,9 @@ class _PriorityStudentTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final isCritical = student.profileLabel.contains('Crítico');
-    final color = isCritical ? SegmentationDashboardColors.redCritical : SegmentationDashboardColors.orangeRisk;
+    final color = isCritical
+        ? SegmentationDashboardColors.redCritical
+        : SegmentationDashboardColors.orangeRisk;
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 8),
@@ -85,10 +100,14 @@ class _PriorityStudentTile extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 16,
-            backgroundColor: color.withOpacity(0.1),
+            backgroundColor: color.withValues(alpha: 0.1),
             child: Text(
               _getInitials(student.name),
-              style: TextStyle(color: color, fontSize: 10, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: color,
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(width: 12),
@@ -98,13 +117,20 @@ class _PriorityStudentTile extends StatelessWidget {
               children: [
                 Text(
                   student.name,
-                  style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: SegmentationDashboardColors.textPrimary),
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: SegmentationDashboardColors.textPrimary,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   '${student.program} · Sem. 4', // Mock semestre por falta de campo
-                  style: const TextStyle(fontSize: 10, color: SegmentationDashboardColors.textSecondary),
+                  style: const TextStyle(
+                    fontSize: 10,
+                    color: SegmentationDashboardColors.textSecondary,
+                  ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
@@ -115,16 +141,24 @@ class _PriorityStudentTile extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
             decoration: BoxDecoration(
-              color: color.withOpacity(0.1),
+              color: color.withValues(alpha: 0.1),
               borderRadius: BorderRadius.circular(4),
             ),
             child: Text(
               isCritical ? 'CRÍTICO' : 'RIESGO',
-              style: TextStyle(color: color, fontSize: 8, fontWeight: FontWeight.bold),
+              style: TextStyle(
+                color: color,
+                fontSize: 8,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
           const SizedBox(width: 8),
-          const Icon(Icons.keyboard_arrow_right_rounded, color: SegmentationDashboardColors.textSecondary, size: 20),
+          const Icon(
+            Icons.keyboard_arrow_right_rounded,
+            color: SegmentationDashboardColors.textSecondary,
+            size: 20,
+          ),
         ],
       ),
     );

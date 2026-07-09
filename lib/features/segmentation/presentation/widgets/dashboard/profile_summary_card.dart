@@ -3,10 +3,7 @@ import '../../models/segmentation_dashboard_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class ProfileSummaryCard extends StatelessWidget {
-  const ProfileSummaryCard({
-    required this.metric,
-    super.key,
-  });
+  const ProfileSummaryCard({required this.metric, super.key});
 
   final ProfileMetric metric;
 
@@ -78,11 +75,14 @@ class ProfileSummaryCard extends StatelessWidget {
           Row(
             children: [
               _SmallMetric(
-                  label: 'PROM',
-                  value: metric.averageGrade.toStringAsFixed(1)),
+                label: 'PROM',
+                value: metric.averageGrade.toStringAsFixed(1),
+              ),
               const SizedBox(width: 8),
               _SmallMetric(
-                  label: 'ASIST', value: '${metric.averageAttendance.round()}%'),
+                label: 'ASIST',
+                value: '${metric.averageAttendance.round()}%',
+              ),
             ],
           ),
         ],
@@ -108,17 +108,23 @@ class _SmallMetric extends StatelessWidget {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(label,
-            style: const TextStyle(
-                fontSize: 8,
-                fontFamily: 'Roboto',
-                color: SegmentationDashboardColors.textSecondary)),
-        Text(value,
-            style: const TextStyle(
-                fontSize: 10,
-                fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
-                color: SegmentationDashboardColors.textPrimary)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 8,
+            fontFamily: 'Roboto',
+            color: SegmentationDashboardColors.textSecondary,
+          ),
+        ),
+        Text(
+          value,
+          style: const TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            fontFamily: 'Roboto',
+            color: SegmentationDashboardColors.textPrimary,
+          ),
+        ),
       ],
     );
   }

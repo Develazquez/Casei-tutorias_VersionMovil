@@ -45,8 +45,5 @@ class TutorSearchResult {
   final List<SegmentationStudentEntity> students;
   final int totalCount;
 
-  const TutorSearchResult({
-    required this.students,
-    required this.totalCount,
-  });
+  const TutorSearchResult({required this.students, required this.totalCount});
 }

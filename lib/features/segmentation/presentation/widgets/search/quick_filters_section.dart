@@ -9,7 +9,7 @@ class QuickFiltersSection extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final viewModel = context.watch<SegmentationSearchViewModel>();
-    
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -18,13 +18,25 @@ class QuickFiltersSection extends StatelessWidget {
           children: [
             const Text(
               'Filtros rápidos',
-              style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: SegmentationDashboardColors.textSecondary),
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: SegmentationDashboardColors.textSecondary,
+              ),
             ),
             if (viewModel.isSearching)
               TextButton(
                 onPressed: viewModel.clearFilters,
-                style: TextButton.styleFrom(visualDensity: VisualDensity.compact),
-                child: const Text('Limpiar filtros', style: TextStyle(fontSize: 11, color: SegmentationDashboardColors.primaryBlue)),
+                style: TextButton.styleFrom(
+                  visualDensity: VisualDensity.compact,
+                ),
+                child: const Text(
+                  'Limpiar filtros',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: SegmentationDashboardColors.primaryBlue,
+                  ),
+                ),
               ),
           ],
         ),
@@ -73,7 +85,11 @@ class QuickFiltersSection extends StatelessWidget {
         const SizedBox(height: 12),
         const Text(
           'Generaciones',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: SegmentationDashboardColors.textSecondary),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: SegmentationDashboardColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 8),
         Wrap(
@@ -117,9 +133,11 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         decoration: BoxDecoration(
-          color: isSelected ? color : color.withOpacity(0.08),
+          color: isSelected ? color : color.withValues(alpha: 0.08),
           borderRadius: BorderRadius.circular(20),
-          border: Border.all(color: isSelected ? color : color.withOpacity(0.3)),
+          border: Border.all(
+            color: isSelected ? color : color.withValues(alpha: 0.3),
+          ),
         ),
         child: Row(
           mainAxisSize: MainAxisSize.min,
@@ -127,7 +145,7 @@ class _FilterChip extends StatelessWidget {
             Text(
               label,
               style: TextStyle(
-                fontSize: 11, 
+                fontSize: 11,
                 fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
                 color: isSelected ? Colors.white : color.darken(),
               ),
@@ -136,13 +154,15 @@ class _FilterChip extends StatelessWidget {
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 1),
               decoration: BoxDecoration(
-                color: isSelected ? Colors.white.withOpacity(0.2) : color.withOpacity(0.1),
+                color: isSelected
+                    ? Colors.white.withValues(alpha: 0.2)
+                    : color.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(6),
               ),
               child: Text(
                 '$count',
                 style: TextStyle(
-                  fontSize: 10, 
+                  fontSize: 10,
                   fontWeight: FontWeight.bold,
                   color: isSelected ? Colors.white : color.darken(),
                 ),

@@ -16,15 +16,44 @@ class SegmentationModelView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      create: (context) => SegmentationModelViewModel(
-        context.read<SegmentationProvider>(),
-      ),
+      create: (context) =>
+          SegmentationModelViewModel(context.read<SegmentationProvider>()),
       child: Consumer<SegmentationModelViewModel>(
         builder: (context, viewModel, child) {
           final data = viewModel.data;
 
           if (viewModel.isLoading) {
             return const Center(child: CircularProgressIndicator());
+          }
+          if (viewModel.errorMessage != null) {
+            return Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Text(
+                  viewModel.errorMessage!,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: SegmentationDashboardColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
+          }
+          if (data.qualityMetrics.isEmpty &&
+              data.experiments.isEmpty &&
+              data.pcaPoints.isEmpty) {
+            return const Center(
+              child: Padding(
+                padding: EdgeInsets.all(24),
+                child: Text(
+                  'No hay artefactos de modelo disponibles en Supabase Storage.',
+                  textAlign: TextAlign.center,
+                  style: TextStyle(
+                    color: SegmentationDashboardColors.textSecondary,
+                  ),
+                ),
+              ),
+            );
           }
 
           return ListView(

@@ -15,11 +15,11 @@ import 'features/auth/domain/usecases/login_usecase.dart';
 import 'features/auth/domain/usecases/logout_usecase.dart';
 import 'features/auth/domain/usecases/register_usecase.dart';
 import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/segmentation/data/datasources/segmentation_mock_data_source.dart';
 import 'features/segmentation/data/datasources/segmentation_supabase_storage_data_source.dart';
 import 'features/segmentation/data/repositories/segmentation_repository_impl.dart';
 import 'features/segmentation/domain/repositories/segmentation_repository.dart';
 import 'features/segmentation/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'features/segmentation/domain/usecases/get_segmentation_model_artifacts_usecase.dart';
 import 'features/segmentation/domain/usecases/get_segmentation_students_usecase.dart';
 import 'features/segmentation/presentation/providers/segmentation_provider.dart';
 
@@ -45,11 +45,8 @@ Future<void> init() async {
     ..registerLazySingleton(() => LogoutUseCase(sl()))
     ..registerLazySingleton(() => GetCurrentUserUseCase(sl()))
     ..registerFactory(() => AuthProvider(sl(), sl(), sl(), sl()))
-    ..registerLazySingleton<SegmentationMockDataSource>(
-      () => SegmentationMockDataSource(),
-    )
     ..registerLazySingleton<SegmentationSupabaseStorageDataSource>(
-      () => SegmentationSupabaseStorageDataSource(sl(), sl()),
+      () => SegmentationSupabaseStorageDataSource(sl()),
     )
     ..registerLazySingleton<SegmentationRepository>(
       () => SegmentationRepositoryImpl(
@@ -58,5 +55,6 @@ Future<void> init() async {
     )
     ..registerLazySingleton(() => GetDashboardSummaryUseCase(sl()))
     ..registerLazySingleton(() => GetSegmentationStudentsUseCase(sl()))
-    ..registerFactory(() => SegmentationProvider(sl(), sl()));
+    ..registerLazySingleton(() => GetSegmentationModelArtifactsUseCase(sl()))
+    ..registerFactory(() => SegmentationProvider(sl(), sl(), sl()));
 }

@@ -81,7 +81,10 @@ class _SegmentationDashboardPageState extends State<SegmentationDashboardPage> {
             IconButton(
               tooltip: 'Baúl encriptado',
               onPressed: () => Navigator.pushNamed(context, '/security/vault'),
-              icon: const Icon(Icons.lock_outline, color: CaceiUiColors.primary),
+              icon: const Icon(
+                Icons.lock_outline,
+                color: CaceiUiColors.primary,
+              ),
             ),
             IconButton(
               tooltip: 'Cerrar sesión',
@@ -102,95 +105,97 @@ class _SegmentationDashboardPageState extends State<SegmentationDashboardPage> {
           child: provider.state == ViewState.loading
               ? const Center(child: CircularProgressIndicator())
               : provider.state == ViewState.error
-                  ? Center(child: Text(provider.errorMessage ?? 'Error'))
-                  : summary == null
-                      ? const Center(child: Text('Sin datos disponibles.'))
-                      : RefreshIndicator(
-                          onRefresh: () => provider.load(role: auth.user?.role),
-                          child: ListView(
-                            padding: const EdgeInsets.all(16),
-                            children: [
-                              Text(
-                                isTutor
-                                    ? 'Prioriza sesiones, revisa asistencia y da seguimiento a tutorados con rezago.'
-                                    : 'Vista ejecutiva de perfiles académicos detectados por clustering no supervisado.',
-                                style: Theme.of(context).textTheme.bodyLarge,
-                              ),
-                              const SizedBox(height: 16),
-                              Wrap(
-                                spacing: 12,
-                                runSpacing: 12,
-                                children: [
-                                  MetricTile(
-                                    icon: Icons.people_alt_outlined,
-                                    label: 'Estudiantes',
-                                    value: '${summary.totalStudents}',
-                                  ),
-                                  MetricTile(
-                                    icon: Icons.grade_outlined,
-                                    label: 'Promedio',
-                                    value: summary.averageGrade.toStringAsFixed(1),
-                                  ),
-                                  MetricTile(
-                                    icon: Icons.event_available_outlined,
-                                    label: 'Asistencia',
-                                    value:
-                                        '${summary.attendanceRate.toStringAsFixed(1)}%',
-                                  ),
-                                  MetricTile(
-                                    icon: Icons.warning_amber_outlined,
-                                    label: 'En seguimiento',
-                                    value: '${summary.riskStudents}',
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 18),
-                              GridView.builder(
-                                shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
-                                itemCount: summary.clusters.length,
-                                gridDelegate:
-                                    SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount:
-                                      MediaQuery.sizeOf(context).width > 920
-                                          ? 4
-                                          : MediaQuery.sizeOf(context).width > 620
-                                              ? 2
-                                              : 1,
-                                  crossAxisSpacing: 12,
-                                  mainAxisSpacing: 12,
-                                  mainAxisExtent: 190,
-                                ),
-                                itemBuilder: (context, index) {
-                                  return ClusterCard(
-                                    cluster: summary.clusters[index],
-                                    totalStudents: summary.totalStudents,
-                                  );
-                                },
-                              ),
-                              const SizedBox(height: 18),
-                              FilterBar(
-                                profiles: provider.profiles,
-                                programs: provider.programs,
-                                selectedProfile: provider.selectedProfile,
-                                selectedProgram: provider.selectedProgram,
-                                onProfileChanged: (value) => provider
-                                    .changeProfile(value, role: auth.user?.role),
-                                onProgramChanged: (value) => provider
-                                    .changeProgram(value, role: auth.user?.role),
-                              ),
-                              const SizedBox(height: 12),
-                              SegmentationSearchBox(
-                                query: provider.searchQuery,
-                                resultCount: provider.students.length,
-                                onChanged: provider.changeSearchQuery,
-                                onClear: provider.clearSearch,
-                              ),
-                              const SizedBox(height: 12),
-                              StudentList(students: provider.students),
-                            ],
+              ? Center(child: Text(provider.errorMessage ?? 'Error'))
+              : summary == null
+              ? const Center(child: Text('Sin datos disponibles.'))
+              : RefreshIndicator(
+                  onRefresh: () => provider.load(role: auth.user?.role),
+                  child: ListView(
+                    padding: const EdgeInsets.all(16),
+                    children: [
+                      Text(
+                        isTutor
+                            ? 'Prioriza sesiones, revisa asistencia y da seguimiento a tutorados con rezago.'
+                            : 'Vista ejecutiva de perfiles académicos detectados por clustering no supervisado.',
+                        style: Theme.of(context).textTheme.bodyLarge,
+                      ),
+                      const SizedBox(height: 16),
+                      Wrap(
+                        spacing: 12,
+                        runSpacing: 12,
+                        children: [
+                          MetricTile(
+                            icon: Icons.people_alt_outlined,
+                            label: 'Estudiantes',
+                            value: '${summary.totalStudents}',
                           ),
+                          MetricTile(
+                            icon: Icons.grade_outlined,
+                            label: 'Promedio',
+                            value: summary.averageGrade.toStringAsFixed(1),
+                          ),
+                          MetricTile(
+                            icon: Icons.event_available_outlined,
+                            label: 'Asistencia',
+                            value:
+                                '${summary.attendanceRate.toStringAsFixed(1)}%',
+                          ),
+                          MetricTile(
+                            icon: Icons.warning_amber_outlined,
+                            label: 'En seguimiento',
+                            value: '${summary.riskStudents}',
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 18),
+                      GridView.builder(
+                        shrinkWrap: true,
+                        physics: const NeverScrollableScrollPhysics(),
+                        itemCount: summary.clusters.length,
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: MediaQuery.sizeOf(context).width > 920
+                              ? 4
+                              : MediaQuery.sizeOf(context).width > 620
+                              ? 2
+                              : 1,
+                          crossAxisSpacing: 12,
+                          mainAxisSpacing: 12,
+                          mainAxisExtent: 190,
                         ),
+                        itemBuilder: (context, index) {
+                          return ClusterCard(
+                            cluster: summary.clusters[index],
+                            totalStudents: summary.totalStudents,
+                          );
+                        },
+                      ),
+                      const SizedBox(height: 18),
+                      FilterBar(
+                        profiles: provider.profiles,
+                        programs: provider.programs,
+                        selectedProfile: provider.selectedProfile,
+                        selectedProgram: provider.selectedProgram,
+                        onProfileChanged: (value) => provider.changeProfile(
+                          value,
+                          role: auth.user?.role,
+                        ),
+                        onProgramChanged: (value) => provider.changeProgram(
+                          value,
+                          role: auth.user?.role,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      SegmentationSearchBox(
+                        query: provider.searchQuery,
+                        resultCount: provider.students.length,
+                        onChanged: provider.changeSearchQuery,
+                        onClear: provider.clearSearch,
+                      ),
+                      const SizedBox(height: 12),
+                      StudentList(students: provider.students),
+                    ],
+                  ),
+                ),
         ),
       ),
     );

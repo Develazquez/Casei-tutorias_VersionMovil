@@ -71,7 +71,7 @@ class SegmentationDashboardHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
                 decoration: BoxDecoration(
-                  color: Colors.white.withOpacity(0.1),
+                  color: Colors.white.withValues(alpha: 0.1),
                   borderRadius: BorderRadius.circular(20),
                   border: Border.all(color: Colors.white24),
                 ),
@@ -87,7 +87,11 @@ class SegmentationDashboardHeader extends StatelessWidget {
                 ),
               ),
               const SizedBox(width: 8),
-              const Icon(Icons.notifications_none_rounded, color: Colors.white, size: 24),
+              const Icon(
+                Icons.notifications_none_rounded,
+                color: Colors.white,
+                size: 24,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -171,7 +175,9 @@ class _TabItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isActive ? SegmentationDashboardColors.primaryBlue : Colors.transparent,
+              color: isActive
+                  ? SegmentationDashboardColors.primaryBlue
+                  : Colors.transparent,
               width: 3,
             ),
           ),

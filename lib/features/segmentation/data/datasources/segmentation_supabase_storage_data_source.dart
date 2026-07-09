@@ -6,44 +6,39 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import '../../../../core/constants/app_constants.dart';
 import '../models/cluster_profile_dto.dart';
 import '../models/dashboard_summary_dto.dart';
+import '../models/segmentation_model_artifacts_dto.dart';
 import '../models/segmentation_student_dto.dart';
 import 'segmentation_data_source.dart';
-import 'segmentation_mock_data_source.dart';
 
 class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
-  SegmentationSupabaseStorageDataSource(this._client, this._fallback);
+  SegmentationSupabaseStorageDataSource(this._client);
 
   final SupabaseClient _client;
-  final SegmentationMockDataSource _fallback;
 
   _SegmentationArtifacts? _cache;
 
   @override
   Future<DashboardSummaryDto> getSummary({String? role}) async {
-    try {
-      final artifacts = await _loadArtifacts();
-      final students = _scopeStudents(artifacts.students, role: role);
-      final clusters = _buildProfileClusters(students);
-      final total = clusters.fold<int>(
-        0,
-        (sum, cluster) => sum + cluster.studentCount,
-      );
-      final risk = clusters
-          .where((cluster) => cluster.label != _ProfileLabels.regular)
-          .fold<int>(0, (sum, cluster) => sum + cluster.studentCount);
+    final artifacts = await _loadArtifacts();
+    final students = _scopeStudents(artifacts.students, role: role);
+    final clusters = _buildProfileClusters(students);
+    final total = clusters.fold<int>(
+      0,
+      (sum, cluster) => sum + cluster.studentCount,
+    );
+    final risk = clusters
+        .where((cluster) => cluster.label != _ProfileLabels.regular)
+        .fold<int>(0, (sum, cluster) => sum + cluster.studentCount);
 
-      return DashboardSummaryDto(
-        totalStudents: total,
-        averageGrade: _average(students.map((student) => student.averageGrade)),
-        attendanceRate: _average(
-          students.map((student) => student.attendanceRate),
-        ),
-        riskStudents: risk,
-        clusters: clusters,
-      );
-    } catch (_) {
-      return _fallback.getSummary(role: role);
-    }
+    return DashboardSummaryDto(
+      totalStudents: total,
+      averageGrade: _average(students.map((student) => student.averageGrade)),
+      attendanceRate: _average(
+        students.map((student) => student.attendanceRate),
+      ),
+      riskStudents: risk,
+      clusters: clusters,
+    );
   }
 
   @override
@@ -52,39 +47,201 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
     String? profile,
     String? program,
   }) async {
-    try {
-      final artifacts = await _loadArtifacts();
-      Iterable<SegmentationStudentDto> result = _scopeStudents(
-        artifacts.students,
-        role: role,
-      );
-      if (profile != null && profile != 'Todos') {
-        result = result.where((student) => student.profileLabel == profile);
-      }
-      if (program != null && program != 'Todos') {
-        result = result.where((student) => student.program == program);
-      }
-      return result.toList();
-    } catch (_) {
-      return _fallback.getStudents(
-        role: role,
-        profile: profile,
-        program: program,
-      );
+    final artifacts = await _loadArtifacts();
+    Iterable<SegmentationStudentDto> result = _scopeStudents(
+      artifacts.students,
+      role: role,
+    );
+    if (profile != null && profile != 'Todos') {
+      result = result.where((student) => student.profileLabel == profile);
     }
+    if (program != null && program != 'Todos') {
+      result = result.where((student) => student.program == program);
+    }
+    return result.toList();
+  }
+
+  @override
+  Future<SegmentationModelArtifactsDto> getModelArtifacts() async {
+    final loaded = await _loadArtifacts();
+    final metadataText = await _downloadText('artifacts/kmeans_metadata.json');
+    final kMetricsCsv = await _downloadText(
+      'data/reports/k_selection_metrics.csv',
+    );
+    final searchMetricsCsv = await _downloadText(
+      'data/reports/search_metrics.csv',
+    );
+    final pcaScoresCsv = await _downloadText('data/processed/pca_scores.csv');
+
+    final metadata = jsonDecode(metadataText) as Map<String, dynamic>;
+    final modelMetrics = metadata['metrics'] as Map<String, dynamic>? ?? {};
+    final selectedRepresentation =
+        metadata['selected_representation']?.toString() ?? '-';
+    final selectedK = _toIntValue(metadata['selected_k']);
+
+    final kRows = _parseCsv(kMetricsCsv);
+    final searchRows = _parseCsv(searchMetricsCsv);
+    final pcaRows = _parseCsv(pcaScoresCsv);
+
+    final profileByKey = {
+      for (final student in loaded.students)
+        '${student.id}::${student.period}': student.profileLabel,
+    };
+
+    return SegmentationModelArtifactsDto(
+      metrics: [
+        SegmentationMetricDto(
+          name: 'K seleccionado',
+          value: selectedK.toDouble(),
+          description: selectedRepresentation,
+          isUpGood: true,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'Silhouette',
+          value: _toDoubleValue(modelMetrics['silhouette']),
+          description: 'Cohesión',
+          isUpGood: true,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'Davies-Bouldin',
+          value: _toDoubleValue(modelMetrics['davies_bouldin']),
+          description: 'Separación',
+          isUpGood: false,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'Calinski-Harabasz',
+          value: _toDoubleValue(modelMetrics['calinski_harabasz']),
+          description: 'Densidad',
+          isUpGood: true,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'Inercia',
+          value: _toDoubleValue(modelMetrics['inertia']),
+          description: 'Dist. intra-cluster',
+          isUpGood: false,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'Precision@10',
+          value: _average(
+            searchRows.map((row) => _toDouble(row['precision@10'])),
+          ),
+          description: 'BM25',
+          isUpGood: true,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'Recall@10',
+          value: _average(searchRows.map((row) => _toDouble(row['recall@10']))),
+          description: 'BM25',
+          isUpGood: true,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'MRR@10',
+          value: _average(searchRows.map((row) => _toDouble(row['mrr@10']))),
+          description: 'BM25',
+          isUpGood: true,
+          origin: 'storage',
+        ),
+        SegmentationMetricDto(
+          name: 'NDCG@10',
+          value: _average(searchRows.map((row) => _toDouble(row['ndcg@10']))),
+          description: 'BM25',
+          isUpGood: true,
+          origin: 'storage',
+        ),
+      ],
+      experiments: kRows
+          .map(
+            (row) => SegmentationExperimentDto(
+              representation: row['representation'] ?? '-',
+              k: _toInt(row['k']),
+              silhouette: _toDouble(row['silhouette']),
+              daviesBouldin: _toDouble(row['davies_bouldin']),
+              minSize: _toInt(row['min_cluster_size']),
+              maxSize: _toInt(row['max_cluster_size']),
+              selected:
+                  (row['representation'] ?? '') == selectedRepresentation &&
+                  _toInt(row['k']) == selectedK,
+            ),
+          )
+          .toList(),
+      pcaPoints: pcaRows
+          .where((row) => row.containsKey('PC1') && row.containsKey('PC2'))
+          .take(180)
+          .map((row) {
+            final key = '${row['id_estudiante']}::${row['id_periodo']}';
+            return SegmentationPcaPointDto(
+              x: _toDouble(row['PC1']),
+              y: _toDouble(row['PC2']),
+              label: profileByKey[key] ?? 'Sin perfil',
+            );
+          })
+          .toList(),
+      artifacts: const [
+        SegmentationArtifactDto(
+          id: 'cluster_assignments',
+          displayName: 'Asignaciones de cluster',
+          fileName: 'data/processed/cluster_assignments.csv',
+          type: 'CSV',
+          available: true,
+        ),
+        SegmentationArtifactDto(
+          id: 'student_period_features',
+          displayName: 'Dataset alumno-periodo',
+          fileName: 'data/processed/student_period_features.csv',
+          type: 'CSV',
+          available: true,
+        ),
+        SegmentationArtifactDto(
+          id: 'k_selection_metrics',
+          displayName: 'Comparación de K',
+          fileName: 'data/reports/k_selection_metrics.csv',
+          type: 'CSV',
+          available: true,
+        ),
+        SegmentationArtifactDto(
+          id: 'search_metrics',
+          displayName: 'Métricas BM25',
+          fileName: 'data/reports/search_metrics.csv',
+          type: 'CSV',
+          available: true,
+        ),
+        SegmentationArtifactDto(
+          id: 'pca_scores',
+          displayName: 'Dispersión PC1/PC2',
+          fileName: 'data/processed/pca_scores.csv',
+          type: 'CSV',
+          available: true,
+        ),
+        SegmentationArtifactDto(
+          id: 'kmeans_metadata',
+          displayName: 'Metadata K-Means',
+          fileName: 'artifacts/kmeans_metadata.json',
+          type: 'JSON',
+          available: true,
+        ),
+      ],
+    );
   }
 
   Future<_SegmentationArtifacts> _loadArtifacts() async {
     if (_cache != null) return _cache!;
 
-    final rawCsv = await _downloadText(
+    final rawRows = await _downloadFirstAvailableAnalyticRows([
+      'data/processed/student_period_features.csv',
+      'data/raw/dataset_crudo_2000_estudiantes.csv',
       'data/raw/dataset_sintetico_alumnos_v2.csv',
-    );
+    ]);
     final assignmentsCsv = await _downloadText(
       'data/processed/cluster_assignments.csv',
     );
 
-    final rawRows = _parseCsv(rawCsv);
     final assignmentRows = _parseCsv(assignmentsCsv);
     final assignmentByKey = {
       for (final row in assignmentRows)
@@ -96,7 +253,6 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
       final key = '${row['id_estudiante']}::${row['id_periodo']}';
       final assignment = assignmentByKey[key];
       if (assignment == null) continue;
-
       final averageGrade = _toDouble(row['promedio_general']);
       final attendanceRate = _toDouble(row['porcentaje_asistencia']);
       final delayedSubjects = _toDouble(row['rezago_materias']);
@@ -128,18 +284,54 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
       );
     }
 
+    if (students.isEmpty) {
+      throw StateError(
+        'No se encontraron alumnos segmentados en Supabase Storage. '
+        'Revisa que cluster_assignments.csv y student_period_features.csv compartan id_estudiante e id_periodo.',
+      );
+    }
+
     _cache = _SegmentationArtifacts(students);
     return _cache!;
   }
 
+  Future<List<Map<String, String>>> _downloadFirstAvailableAnalyticRows(
+    List<String> artifactPaths,
+  ) async {
+    final errors = <String>[];
+    for (final path in artifactPaths) {
+      try {
+        final rows = _parseCsv(await _downloadText(path));
+        if (rows.isNotEmpty && _hasAnalyticColumns(rows.first)) {
+          return rows;
+        }
+        errors.add('$path: no contiene columnas analíticas requeridas');
+      } catch (error) {
+        errors.add('$path: $error');
+      }
+    }
+    throw StateError(
+      'No se pudo descargar un dataset de alumnos desde Supabase Storage. '
+      'Intentos: ${errors.join(' | ')}',
+    );
+  }
+
   Future<String> _downloadText(String artifactPath) async {
-    final storagePath =
-        '${AppConstants.segmentationStoragePrefix}/$artifactPath';
+    final prefix = AppConstants.segmentationStoragePrefix.trim();
+    final storagePath = prefix.isEmpty ? artifactPath : '$prefix/$artifactPath';
     final Uint8List bytes = await _client.storage
         .from(AppConstants.segmentationStorageBucket)
         .download(storagePath)
         .timeout(const Duration(seconds: 8));
     return utf8.decode(bytes);
+  }
+
+  bool _hasAnalyticColumns(Map<String, String> row) {
+    return row.containsKey('id_estudiante') &&
+        row.containsKey('id_periodo') &&
+        row.containsKey('programa') &&
+        row.containsKey('promedio_general') &&
+        row.containsKey('rezago_materias');
   }
 
   List<ClusterProfileDto> _buildProfileClusters(
@@ -246,11 +438,15 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
     }
     if (rows.isEmpty) return [];
 
-    final headers = rows.first;
+    final headers = rows.first
+        .map((header) => header.replaceFirst('\ufeff', '').trim())
+        .toList();
     return rows.skip(1).map((values) {
       final mapped = <String, String>{};
       for (var index = 0; index < headers.length; index++) {
-        mapped[headers[index]] = index < values.length ? values[index] : '';
+        mapped[headers[index]] = index < values.length
+            ? values[index].trim()
+            : '';
       }
       return mapped;
     }).toList();
@@ -268,6 +464,16 @@ class SegmentationSupabaseStorageDataSource implements SegmentationDataSource {
 
   int _toInt(String? value) {
     return int.tryParse(value ?? '') ?? 0;
+  }
+
+  double _toDoubleValue(Object? value) {
+    if (value is num) return value.toDouble();
+    return _toDouble(value?.toString());
+  }
+
+  int _toIntValue(Object? value) {
+    if (value is num) return value.toInt();
+    return _toInt(value?.toString());
   }
 }
 

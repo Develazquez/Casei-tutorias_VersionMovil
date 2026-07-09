@@ -4,10 +4,7 @@ import '../../models/segmentation_dashboard_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class ProfileDistributionChart extends StatelessWidget {
-  const ProfileDistributionChart({
-    required this.metrics,
-    super.key,
-  });
+  const ProfileDistributionChart({required this.metrics, super.key});
 
   final List<ProfileMetric> metrics;
 
@@ -37,9 +34,7 @@ class ProfileDistributionChart extends StatelessWidget {
               SizedBox(
                 width: 120,
                 height: 120,
-                child: CustomPaint(
-                  painter: _DoughnutPainter(metrics),
-                ),
+                child: CustomPaint(painter: _DoughnutPainter(metrics)),
               ),
               const SizedBox(width: 20),
               Expanded(
@@ -77,7 +72,10 @@ class _LegendItem extends StatelessWidget {
           Expanded(
             child: Text(
               metric.label,
-              style: const TextStyle(fontSize: 11, color: SegmentationDashboardColors.textPrimary),
+              style: const TextStyle(
+                fontSize: 11,
+                color: SegmentationDashboardColors.textPrimary,
+              ),
               overflow: TextOverflow.ellipsis,
             ),
           ),

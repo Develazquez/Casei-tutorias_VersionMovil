@@ -36,13 +36,15 @@ class SegmentationDashboardViewModel extends ChangeNotifier {
     }
 
     final total = students.length;
-    
+
     // Asumimos que todos son activos por falta de campo 'estado' en entidad real
-    final activeCount = total; 
+    final activeCount = total;
     final alumniCount = 0; // Sin datos
 
     final avgGrade = _calculateAverage(students.map((e) => e.averageGrade));
-    final avgAttendance = _calculateAverage(students.map((e) => e.attendanceRate));
+    final avgAttendance = _calculateAverage(
+      students.map((e) => e.attendanceRate),
+    );
 
     // Agrupar por perfiles (Normalización de etiquetas)
     final profileGroups = <String, List<SegmentationStudentEntity>>{};
@@ -58,12 +60,16 @@ class SegmentationDashboardViewModel extends ChangeNotifier {
         count: group.length,
         percentage: (group.length / total) * 100,
         averageGrade: _calculateAverage(group.map((e) => e.averageGrade)),
-        averageAttendance: _calculateAverage(group.map((e) => e.attendanceRate)),
+        averageAttendance: _calculateAverage(
+          group.map((e) => e.attendanceRate),
+        ),
       );
     }).toList();
 
     // Ordenar métricas por importancia visual (Crítico primero, etc.)
-    profileMetrics.sort((a, b) => _labelPriority(b.label).compareTo(_labelPriority(a.label)));
+    profileMetrics.sort(
+      (a, b) => _labelPriority(b.label).compareTo(_labelPriority(a.label)),
+    );
 
     // Alumnos prioritarios: Críticos y Riesgo Moderado
     final priorityList = students.where((s) {
@@ -88,9 +94,9 @@ class SegmentationDashboardViewModel extends ChangeNotifier {
       profileMetrics: profileMetrics,
       priorityStudents: priorityList.take(4).toList(),
       totalStudents: total,
-      // Detectamos si es mock basándonos en la cantidad exacta del mock (9) 
+      // Detectamos si es mock basándonos en la cantidad exacta del mock (9)
       // o si no hay alumnos reales.
-      isMock: total == 9, 
+      isMock: total == 9,
     );
   }
 

@@ -3,10 +3,7 @@ import '../../models/segmentation_model_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class ExperimentResultsTable extends StatelessWidget {
-  const ExperimentResultsTable({
-    required this.experiments,
-    super.key,
-  });
+  const ExperimentResultsTable({required this.experiments, super.key});
 
   final List<ModelExperimentResult> experiments;
 
@@ -28,14 +25,20 @@ class ExperimentResultsTable extends StatelessWidget {
           DataColumn(label: Text('Min/Max', style: _headStyle)),
         ],
         rows: experiments.map((e) {
-          final color = e.selected ? SegmentationDashboardColors.selectionBackground : null;
+          final color = e.selected
+              ? SegmentationDashboardColors.selectionBackground
+              : null;
           return DataRow(
             color: WidgetStateProperty.all(color),
             cells: [
               DataCell(Text(e.representation, style: _cellStyle)),
               DataCell(Text('${e.k}', style: _cellStyle)),
-              DataCell(Text(e.silhouette.toStringAsFixed(3), style: _cellStyle)),
-              DataCell(Text(e.daviesBouldin.toStringAsFixed(3), style: _cellStyle)),
+              DataCell(
+                Text(e.silhouette.toStringAsFixed(3), style: _cellStyle),
+              ),
+              DataCell(
+                Text(e.daviesBouldin.toStringAsFixed(3), style: _cellStyle),
+              ),
               DataCell(Text('${e.minSize}/${e.maxSize}', style: _cellStyle)),
             ],
           );
@@ -44,6 +47,13 @@ class ExperimentResultsTable extends StatelessWidget {
     );
   }
 
-  static const _headStyle = TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: SegmentationDashboardColors.textSecondary);
-  static const _cellStyle = TextStyle(fontSize: 10, color: SegmentationDashboardColors.textPrimary);
+  static const _headStyle = TextStyle(
+    fontSize: 10,
+    fontWeight: FontWeight.bold,
+    color: SegmentationDashboardColors.textSecondary,
+  );
+  static const _cellStyle = TextStyle(
+    fontSize: 10,
+    color: SegmentationDashboardColors.textPrimary,
+  );
 }

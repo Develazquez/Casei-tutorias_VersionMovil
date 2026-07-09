@@ -154,22 +154,27 @@ class _MockIndicator extends StatelessWidget {
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
       decoration: BoxDecoration(
-        color: SegmentationDashboardColors.orangeRisk.withOpacity(0.1),
+        color: SegmentationDashboardColors.orangeRisk.withValues(alpha: 0.1),
         borderRadius: BorderRadius.circular(8),
         border: Border.all(
-            color: SegmentationDashboardColors.orangeRisk.withOpacity(0.3)),
+          color: SegmentationDashboardColors.orangeRisk.withValues(alpha: 0.3),
+        ),
       ),
       child: const Row(
         children: [
-          Icon(Icons.info_outline,
-              color: SegmentationDashboardColors.orangeRisk, size: 16),
+          Icon(
+            Icons.info_outline,
+            color: SegmentationDashboardColors.orangeRisk,
+            size: 16,
+          ),
           SizedBox(width: 8),
           Text(
             'Usando fuente de datos Mock (Falló conexión CSV)',
             style: TextStyle(
-                color: SegmentationDashboardColors.orangeRisk,
-                fontSize: 10,
-                fontWeight: FontWeight.bold),
+              color: SegmentationDashboardColors.orangeRisk,
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+            ),
           ),
         ],
       ),

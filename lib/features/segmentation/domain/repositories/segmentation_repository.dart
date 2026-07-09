@@ -1,4 +1,5 @@
 import '../entities/dashboard_summary_entity.dart';
+import '../entities/segmentation_model_artifacts_entity.dart';
 import '../entities/segmentation_student_entity.dart';
 
 abstract class SegmentationRepository {
@@ -8,4 +9,6 @@ abstract class SegmentationRepository {
     String? profile,
     String? program,
   });
+
+  Future<SegmentationModelArtifactsEntity> getModelArtifacts();
 }

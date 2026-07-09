@@ -3,19 +3,27 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/utils/view_state.dart';
 import '../../domain/entities/dashboard_summary_entity.dart';
+import '../../domain/entities/segmentation_model_artifacts_entity.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
 import '../../domain/usecases/get_dashboard_summary_usecase.dart';
+import '../../domain/usecases/get_segmentation_model_artifacts_usecase.dart';
 import '../../domain/usecases/get_segmentation_students_usecase.dart';
 
 class SegmentationProvider extends ChangeNotifier {
-  SegmentationProvider(this._getSummaryUseCase, this._getStudentsUseCase);
+  SegmentationProvider(
+    this._getSummaryUseCase,
+    this._getStudentsUseCase,
+    this._getModelArtifactsUseCase,
+  );
 
   final GetDashboardSummaryUseCase _getSummaryUseCase;
   final GetSegmentationStudentsUseCase _getStudentsUseCase;
+  final GetSegmentationModelArtifactsUseCase _getModelArtifactsUseCase;
 
   ViewState _state = ViewState.idle;
   String? _errorMessage;
   DashboardSummaryEntity? _summary;
+  SegmentationModelArtifactsEntity? _modelArtifacts;
   List<SegmentationStudentEntity> _students = [];
   List<SegmentationStudentEntity> _visibleStudents = [];
   String _selectedProfile = 'Todos';
@@ -25,6 +33,7 @@ class SegmentationProvider extends ChangeNotifier {
   ViewState get state => _state;
   String? get errorMessage => _errorMessage;
   DashboardSummaryEntity? get summary => _summary;
+  SegmentationModelArtifactsEntity? get modelArtifacts => _modelArtifacts;
   List<SegmentationStudentEntity> get students => _visibleStudents;
   String get selectedProfile => _selectedProfile;
   String get selectedProgram => _selectedProgram;
@@ -57,13 +66,17 @@ class SegmentationProvider extends ChangeNotifier {
         profile: _selectedProfile,
         program: _selectedProgram,
       ).timeout(const Duration(seconds: 8));
+      _modelArtifacts = await _getModelArtifactsUseCase().timeout(
+        const Duration(seconds: 8),
+      );
       _visibleStudents = _applySearch(_students);
       _state = ViewState.success;
     } on AppException catch (e) {
       _errorMessage = e.message;
       _state = ViewState.error;
-    } catch (_) {
-      _errorMessage = 'No fue posible cargar la segmentación.';
+    } catch (error) {
+      _errorMessage =
+          'No fue posible cargar artefactos reales desde Supabase Storage. $error';
       _state = ViewState.error;
     }
     notifyListeners();
@@ -101,8 +114,9 @@ class SegmentationProvider extends ChangeNotifier {
       ).timeout(const Duration(seconds: 8));
       _visibleStudents = _applySearch(_students);
       notifyListeners();
-    } catch (_) {
-      _errorMessage = 'No fue posible actualizar los filtros.';
+    } catch (error) {
+      _errorMessage =
+          'No fue posible actualizar filtros con artefactos reales de Storage. $error';
       notifyListeners();
     }
   }

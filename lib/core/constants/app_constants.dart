@@ -3,15 +3,27 @@ class AppConstants {
 
   static const String appName = 'CACEI Tutorías';
   static const String apiBaseUrl = 'http://localhost:8000/api/v1';
-  static const String supabaseUrl = String.fromEnvironment(
+
+  static const String _expoSupabaseUrl = String.fromEnvironment(
+    'EXPO_PUBLIC_SUPABASE_URL',
+  );
+  static const String _flutterSupabaseUrl = String.fromEnvironment(
     'SUPABASE_URL',
-    defaultValue: 'https://msgqdkhjdpidwbhwnhgr.supabase.co',
   );
-  static const String supabaseAnonKey = String.fromEnvironment(
+  static const String supabaseUrl = _expoSupabaseUrl == ''
+      ? _flutterSupabaseUrl
+      : _expoSupabaseUrl;
+
+  static const String _expoSupabaseAnonKey = String.fromEnvironment(
+    'EXPO_PUBLIC_SUPABASE_ANON_KEY',
+  );
+  static const String _flutterSupabaseAnonKey = String.fromEnvironment(
     'SUPABASE_ANON_KEY',
-    defaultValue:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zZ3Fka2hqZHBpZHdiaHduaGdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTkxMDcsImV4cCI6MjA5NDczNTEwN30.LGYFlUNfavCKqOYef3fEojUe0Njdhw9a73y3hNBCeAE',
   );
+  static const String supabaseAnonKey = _expoSupabaseAnonKey == ''
+      ? _flutterSupabaseAnonKey
+      : _expoSupabaseAnonKey;
+
   static const bool enableScreenCaptureProtection = bool.fromEnvironment(
     'ENABLE_SCREEN_CAPTURE_PROTECTION',
     defaultValue: true,
@@ -40,12 +52,38 @@ class AppConstants {
     'ENABLE_RASP_GUARD',
     defaultValue: true,
   );
-  static const String segmentationStorageBucket = String.fromEnvironment(
-    'SEGMENTATION_STORAGE_BUCKET',
-    defaultValue: 'academic-segmentation',
+  static const String _expoSegmentationStorageBucket = String.fromEnvironment(
+    'EXPO_PUBLIC_SEGMENTATION_STORAGE_BUCKET',
   );
-  static const String segmentationStoragePrefix = String.fromEnvironment(
-    'SEGMENTATION_STORAGE_PREFIX',
-    defaultValue: 'latest',
+  static const String _flutterSegmentationStorageBucket =
+      String.fromEnvironment('SEGMENTATION_STORAGE_BUCKET');
+  static const String segmentationStorageBucket =
+      _expoSegmentationStorageBucket == ''
+      ? (_flutterSegmentationStorageBucket == ''
+            ? 'academic-segmentation'
+            : _flutterSegmentationStorageBucket)
+      : _expoSegmentationStorageBucket;
+
+  static const String _expoSegmentationStoragePrefix = String.fromEnvironment(
+    'EXPO_PUBLIC_SEGMENTATION_STORAGE_PREFIX',
   );
+  static const String _flutterSegmentationStoragePrefix =
+      String.fromEnvironment('SEGMENTATION_STORAGE_PREFIX');
+  static const String segmentationStoragePrefix =
+      _expoSegmentationStoragePrefix == ''
+      ? (_flutterSegmentationStoragePrefix == ''
+            ? ''
+            : _flutterSegmentationStoragePrefix)
+      : _expoSegmentationStoragePrefix;
+
+  static List<String> missingRuntimeConfiguration() {
+    final missing = <String>[];
+    if (supabaseUrl.trim().isEmpty) {
+      missing.add('EXPO_PUBLIC_SUPABASE_URL o SUPABASE_URL');
+    }
+    if (supabaseAnonKey.trim().isEmpty) {
+      missing.add('EXPO_PUBLIC_SUPABASE_ANON_KEY o SUPABASE_ANON_KEY');
+    }
+    return missing;
+  }
 }

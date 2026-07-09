@@ -3,10 +3,7 @@ import '../../models/segmentation_model_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class PcaScatterCard extends StatelessWidget {
-  const PcaScatterCard({
-    required this.points,
-    super.key,
-  });
+  const PcaScatterCard({required this.points, super.key});
 
   final List<PcaPoint> points;
 
@@ -41,9 +38,7 @@ class PcaScatterCard extends StatelessWidget {
           SizedBox(
             height: 200,
             width: double.infinity,
-            child: CustomPaint(
-              painter: _ScatterPainter(points),
-            ),
+            child: CustomPaint(painter: _ScatterPainter(points)),
           ),
           const SizedBox(height: 16),
           const _Legend(),
@@ -62,10 +57,22 @@ class _Legend extends StatelessWidget {
       spacing: 12,
       runSpacing: 8,
       children: [
-        _LegendItem(label: 'Regular', color: SegmentationDashboardColors.profileRegular),
-        _LegendItem(label: 'Atípico', color: SegmentationDashboardColors.profileAtypical),
-        _LegendItem(label: 'Crítico', color: SegmentationDashboardColors.profileCritical),
-        _LegendItem(label: 'Riesgo moderado', color: SegmentationDashboardColors.profileModerate),
+        _LegendItem(
+          label: 'Regular',
+          color: SegmentationDashboardColors.profileRegular,
+        ),
+        _LegendItem(
+          label: 'Atípico',
+          color: SegmentationDashboardColors.profileAtypical,
+        ),
+        _LegendItem(
+          label: 'Crítico',
+          color: SegmentationDashboardColors.profileCritical,
+        ),
+        _LegendItem(
+          label: 'Riesgo moderado',
+          color: SegmentationDashboardColors.profileModerate,
+        ),
       ],
     );
   }
@@ -81,9 +88,19 @@ class _LegendItem extends StatelessWidget {
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
-        Container(width: 8, height: 8, decoration: BoxDecoration(color: color, shape: BoxShape.circle)),
+        Container(
+          width: 8,
+          height: 8,
+          decoration: BoxDecoration(color: color, shape: BoxShape.circle),
+        ),
         const SizedBox(width: 4),
-        Text(label, style: const TextStyle(fontSize: 10, color: SegmentationDashboardColors.textSecondary)),
+        Text(
+          label,
+          style: const TextStyle(
+            fontSize: 10,
+            color: SegmentationDashboardColors.textSecondary,
+          ),
+        ),
       ],
     );
   }
@@ -96,14 +113,22 @@ class _ScatterPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
-    
+
     // Dibujar ejes
     final axisPaint = Paint()
       ..color = SegmentationDashboardColors.border
       ..strokeWidth = 1;
-    
-    canvas.drawLine(Offset(0, size.height / 2), Offset(size.width, size.height / 2), axisPaint);
-    canvas.drawLine(Offset(size.width / 2, 0), Offset(size.width / 2, size.height), axisPaint);
+
+    canvas.drawLine(
+      Offset(0, size.height / 2),
+      Offset(size.width, size.height / 2),
+      axisPaint,
+    );
+    canvas.drawLine(
+      Offset(size.width / 2, 0),
+      Offset(size.width / 2, size.height),
+      axisPaint,
+    );
 
     if (points.isEmpty) return;
 
@@ -116,10 +141,10 @@ class _ScatterPainter extends CustomPainter {
     for (final point in points) {
       final double dx = (point.x + range / 2) * scaleX;
       final double dy = (range / 2 - point.y) * scaleY;
-      
-      paint.color = _getColor(point.label).withOpacity(0.6);
+
+      paint.color = _getColor(point.label).withValues(alpha: 0.6);
       canvas.drawCircle(Offset(dx, dy), 4, paint);
-      
+
       paint.color = _getColor(point.label);
       paint.style = PaintingStyle.stroke;
       paint.strokeWidth = 1;
@@ -129,9 +154,15 @@ class _ScatterPainter extends CustomPainter {
   }
 
   Color _getColor(String label) {
-    if (label.contains('Regular')) return SegmentationDashboardColors.profileRegular;
-    if (label.contains('Atípico')) return SegmentationDashboardColors.profileAtypical;
-    if (label.contains('Crítico')) return SegmentationDashboardColors.profileCritical;
+    if (label.contains('Regular')) {
+      return SegmentationDashboardColors.profileRegular;
+    }
+    if (label.contains('Atípico')) {
+      return SegmentationDashboardColors.profileAtypical;
+    }
+    if (label.contains('Crítico')) {
+      return SegmentationDashboardColors.profileCritical;
+    }
     return SegmentationDashboardColors.profileModerate;
   }
 

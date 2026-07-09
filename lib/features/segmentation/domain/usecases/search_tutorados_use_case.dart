@@ -4,7 +4,10 @@ import '../models/tutor_search_models.dart';
 class SearchTutoradosUseCase {
   static const double lowAttendanceThreshold = 60.0;
 
-  TutorSearchResult call(List<SegmentationStudentEntity> students, TutorSearchQuery query) {
+  TutorSearchResult call(
+    List<SegmentationStudentEntity> students,
+    TutorSearchQuery query,
+  ) {
     if (query.isEmpty) {
       return TutorSearchResult(students: [], totalCount: students.length);
     }
@@ -12,8 +15,9 @@ class SearchTutoradosUseCase {
     final filtered = students.where((student) {
       // 1. Filtro por perfiles (OR dentro de categoría)
       if (query.profiles.isNotEmpty) {
-        final matchesProfile = query.profiles.any((p) => 
-          student.profileLabel.toLowerCase().contains(p.toLowerCase()));
+        final matchesProfile = query.profiles.any(
+          (p) => student.profileLabel.toLowerCase().contains(p.toLowerCase()),
+        );
         if (!matchesProfile) return false;
       }
 
@@ -33,14 +37,18 @@ class SearchTutoradosUseCase {
       // 5. Búsqueda por texto (AND)
       if (query.text.isNotEmpty) {
         final normalizedQuery = _normalize(query.text);
-        final tokens = normalizedQuery.split(RegExp(r'\s+')).where((t) => t.length > 1);
-        
-        final studentDoc = _normalize([
-          student.name,
-          student.id,
-          student.program,
-          student.profileLabel,
-        ].join(' '));
+        final tokens = normalizedQuery
+            .split(RegExp(r'\s+'))
+            .where((t) => t.length > 1);
+
+        final studentDoc = _normalize(
+          [
+            student.name,
+            student.id,
+            student.program,
+            student.profileLabel,
+          ].join(' '),
+        );
 
         if (!tokens.every((token) => studentDoc.contains(token))) return false;
       }
@@ -56,14 +64,12 @@ class SearchTutoradosUseCase {
       return a.name.compareTo(b.name);
     });
 
-    return TutorSearchResult(
-      students: filtered,
-      totalCount: filtered.length,
-    );
+    return TutorSearchResult(students: filtered, totalCount: filtered.length);
   }
 
   String _normalize(String text) {
-    return text.toLowerCase()
+    return text
+        .toLowerCase()
         .replaceAll('á', 'a')
         .replaceAll('é', 'e')
         .replaceAll('í', 'i')

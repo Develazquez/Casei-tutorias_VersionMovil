@@ -11,7 +11,11 @@ class QuickAccessSection extends StatelessWidget {
       children: [
         const Text(
           'Accesos rápidos',
-          style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: SegmentationDashboardColors.textSecondary),
+          style: TextStyle(
+            fontSize: 12,
+            fontWeight: FontWeight.bold,
+            color: SegmentationDashboardColors.textSecondary,
+          ),
         ),
         const SizedBox(height: 12),
         GridView.count(
@@ -66,7 +70,11 @@ class QuickAccessSection extends StatelessWidget {
 
   void _showUnavailable(BuildContext context, String feature) {
     ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text('La consulta de $feature no está disponible en la fuente actual.')),
+      SnackBar(
+        content: Text(
+          'La consulta de $feature no está disponible en la fuente actual.',
+        ),
+      ),
     );
   }
 }
@@ -101,13 +109,20 @@ class _QuickAccessCard extends StatelessWidget {
           children: [
             Container(
               padding: const EdgeInsets.all(6),
-              decoration: BoxDecoration(color: color.withOpacity(0.1), shape: BoxShape.circle),
+              decoration: BoxDecoration(
+                color: color.withValues(alpha: 0.1),
+                shape: BoxShape.circle,
+              ),
               child: Icon(icon, color: color, size: 16),
             ),
             const Spacer(),
             Text(
               title,
-              style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, height: 1.2),
+              style: const TextStyle(
+                fontSize: 10,
+                fontWeight: FontWeight.bold,
+                height: 1.2,
+              ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,
             ),

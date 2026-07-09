@@ -41,19 +41,25 @@ class _TutorSearchBarCardState extends State<TutorSearchBarCard> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'Busca alumnos...',
-                hintStyle: const TextStyle(color: SegmentationDashboardColors.textSecondary, fontSize: 14),
+                hintStyle: const TextStyle(
+                  color: SegmentationDashboardColors.textSecondary,
+                  fontSize: 14,
+                ),
                 border: InputBorder.none,
-                prefixIcon: const Icon(Icons.search_rounded, color: SegmentationDashboardColors.textSecondary),
-                suffixIcon: _controller.text.isNotEmpty 
-                  ? IconButton(
-                      icon: const Icon(Icons.close_rounded, size: 18),
-                      onPressed: () {
-                        _controller.clear();
-                        widget.onClear();
-                        setState(() {});
-                      },
-                    )
-                  : null,
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: SegmentationDashboardColors.textSecondary,
+                ),
+                suffixIcon: _controller.text.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        onPressed: () {
+                          _controller.clear();
+                          widget.onClear();
+                          setState(() {});
+                        },
+                      )
+                    : null,
               ),
               onChanged: (val) {
                 widget.onChanged(val);

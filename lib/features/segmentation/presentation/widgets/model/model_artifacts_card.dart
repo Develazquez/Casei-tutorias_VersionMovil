@@ -3,10 +3,7 @@ import '../../models/segmentation_model_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class ModelArtifactsCard extends StatelessWidget {
-  const ModelArtifactsCard({
-    required this.artifacts,
-    super.key,
-  });
+  const ModelArtifactsCard({required this.artifacts, super.key});
 
   final List<ModelArtifactItem> artifacts;
 
@@ -31,7 +28,7 @@ class ModelArtifactsCard extends StatelessWidget {
             ),
           ),
           const SizedBox(height: 16),
-          ...artifacts.map((a) => _ArtifactTile(item: a)).toList(),
+          ...artifacts.map((a) => _ArtifactTile(item: a)),
         ],
       ),
     );
@@ -47,7 +44,11 @@ class _ArtifactTile extends StatelessWidget {
     return InkWell(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('La consulta de este artefacto estará disponible próximamente.')),
+          const SnackBar(
+            content: Text(
+              'La consulta de este artefacto estará disponible próximamente.',
+            ),
+          ),
         );
       },
       child: Padding(
@@ -60,7 +61,11 @@ class _ArtifactTile extends StatelessWidget {
                 color: SegmentationDashboardColors.background,
                 borderRadius: BorderRadius.circular(8),
               ),
-              child: Icon(_getIcon(item.type), color: SegmentationDashboardColors.primaryBlue, size: 20),
+              child: Icon(
+                _getIcon(item.type),
+                color: SegmentationDashboardColors.primaryBlue,
+                size: 20,
+              ),
             ),
             const SizedBox(width: 12),
             Expanded(
@@ -69,20 +74,33 @@ class _ArtifactTile extends StatelessWidget {
                 children: [
                   Text(
                     item.displayName,
-                    style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold, color: SegmentationDashboardColors.textPrimary),
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                      color: SegmentationDashboardColors.textPrimary,
+                    ),
                   ),
                   Text(
                     item.fileName,
-                    style: const TextStyle(fontSize: 10, color: SegmentationDashboardColors.textSecondary),
+                    style: const TextStyle(
+                      fontSize: 10,
+                      color: SegmentationDashboardColors.textSecondary,
+                    ),
                   ),
                 ],
               ),
             ),
             Text(
               item.createdAt.split(' ')[0], // Solo fecha
-              style: const TextStyle(fontSize: 10, color: SegmentationDashboardColors.textSecondary),
+              style: const TextStyle(
+                fontSize: 10,
+                color: SegmentationDashboardColors.textSecondary,
+              ),
             ),
-            const Icon(Icons.chevron_right_rounded, color: SegmentationDashboardColors.border),
+            const Icon(
+              Icons.chevron_right_rounded,
+              color: SegmentationDashboardColors.border,
+            ),
           ],
         ),
       ),

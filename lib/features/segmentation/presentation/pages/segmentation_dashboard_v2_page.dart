@@ -21,7 +21,8 @@ class SegmentationDashboardV2Page extends StatefulWidget {
       _SegmentationDashboardV2PageState();
 }
 
-class _SegmentationDashboardV2PageState extends State<SegmentationDashboardV2Page> {
+class _SegmentationDashboardV2PageState
+    extends State<SegmentationDashboardV2Page> {
   final GlobalKey<ScaffoldState> _scaffoldKey = GlobalKey<ScaffoldState>();
 
   @override
@@ -46,43 +47,48 @@ class _SegmentationDashboardV2PageState extends State<SegmentationDashboardV2Pag
           create: (context) => SegmentationNavigationViewModel(),
         ),
         ChangeNotifierProvider(
-          create: (context) => TutorNavigationViewModel(initialId: 'segmentation'),
+          create: (context) =>
+              TutorNavigationViewModel(initialId: 'segmentation'),
         ),
       ],
-      child: Consumer2<SegmentationDashboardViewModel,
-          SegmentationNavigationViewModel>(
-        builder: (context, dashboardVm, navViewModel, child) {
-          final auth = context.watch<AuthProvider>();
+      child:
+          Consumer2<
+            SegmentationDashboardViewModel,
+            SegmentationNavigationViewModel
+          >(
+            builder: (context, dashboardVm, navViewModel, child) {
+              final auth = context.watch<AuthProvider>();
 
-          return Scaffold(
-            key: _scaffoldKey,
-            backgroundColor: SegmentationDashboardColors.background,
-            drawer: const TutorNavigationDrawer(),
-            body: SafeArea(
-              child: Column(
-                children: [
-                  SegmentationDashboardHeader(
-                    userName: auth.user?.name ?? 'Diego Velázquez Méndez',
-                    onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
-                    currentIndex: navViewModel.currentTabIndex,
-                    onTabChanged: navViewModel.setTab,
+              return Scaffold(
+                key: _scaffoldKey,
+                backgroundColor: SegmentationDashboardColors.background,
+                drawer: const TutorNavigationDrawer(),
+                body: SafeArea(
+                  child: Column(
+                    children: [
+                      SegmentationDashboardHeader(
+                        userName: auth.user?.name ?? 'Diego Velázquez Méndez',
+                        onMenuPressed: () =>
+                            _scaffoldKey.currentState?.openDrawer(),
+                        currentIndex: navViewModel.currentTabIndex,
+                        onTabChanged: navViewModel.setTab,
+                      ),
+                      Expanded(
+                        child: IndexedStack(
+                          index: navViewModel.currentTabIndex,
+                          children: const [
+                            SegmentationDashboardView(),
+                            SegmentationModelView(),
+                            SegmentationSearchView(),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    child: IndexedStack(
-                      index: navViewModel.currentTabIndex,
-                      children: const [
-                        SegmentationDashboardView(),
-                        SegmentationModelView(),
-                        SegmentationSearchView(),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
     );
   }
 }

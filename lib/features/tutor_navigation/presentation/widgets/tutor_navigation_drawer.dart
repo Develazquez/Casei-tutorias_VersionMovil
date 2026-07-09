@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/ui/cacei_ui_colors.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../models/tutor_navigation_item.dart';
 import '../providers/tutor_navigation_view_model.dart';
 import 'tutor_drawer_header.dart';
 import 'tutor_drawer_profile.dart';
@@ -17,53 +18,42 @@ class TutorNavigationDrawer extends StatelessWidget {
       backgroundColor: CaceiUiColors.cardSurface,
       indicatorColor: CaceiUiColors.selectionBackground,
       selectedIndex: viewModel.selectedIndex,
-      onDestinationSelected: (index) {
-        final item = viewModel.items[index];
-
-        if (!item.enabled) {
-          if (item.comingSoon) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                  'Esta sección estará disponible próximamente en la versión móvil.',
-                ),
-                duration: Duration(seconds: 2),
-              ),
-            );
-          }
-          return;
-        }
-
-        viewModel.setSelectedIndex(index);
-
-        if (item.route != null) {
-          Navigator.of(context).pop(); // Cerrar drawer
-          if (item.id == 'dashboard') {
-            Navigator.pushReplacementNamed(context, item.route!);
-          }
-        }
-      },
       children: [
         const TutorDrawerHeader(),
         ...viewModel.items.map((item) {
           final isSelected =
               viewModel.selectedIndex == viewModel.items.indexOf(item);
-          return NavigationDrawerDestination(
-            icon: Icon(item.iconData, color: CaceiUiColors.primary),
-            selectedIcon:
-                Icon(item.selectedIconData, color: CaceiUiColors.primary),
-            label: Text(
-              item.label + (item.comingSoon ? ' (Próx.)' : ''),
-              style: TextStyle(
-                fontSize: 13,
-                fontFamily: 'Roboto',
-                fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+          return Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
+            child: ListTile(
+              selected: isSelected,
+              enabled: item.enabled || item.comingSoon,
+              selectedTileColor: CaceiUiColors.selectionBackground,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(28),
+              ),
+              leading: Icon(
+                isSelected ? item.selectedIconData : item.iconData,
                 color: item.enabled
-                    ? (isSelected
-                        ? CaceiUiColors.primary
-                        : CaceiUiColors.titleText)
+                    ? CaceiUiColors.primary
                     : CaceiUiColors.secondaryText,
               ),
+              title: Text(
+                item.label + (item.comingSoon ? ' (Próx.)' : ''),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontSize: 13,
+                  fontFamily: 'Roboto',
+                  fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
+                  color: item.enabled
+                      ? (isSelected
+                            ? CaceiUiColors.primary
+                            : CaceiUiColors.titleText)
+                      : CaceiUiColors.secondaryText,
+                ),
+              ),
+              onTap: () => _selectDestination(context, viewModel, item),
             ),
           );
         }),
@@ -91,6 +81,36 @@ class TutorNavigationDrawer extends StatelessWidget {
         ),
       ],
     );
+  }
+
+  void _selectDestination(
+    BuildContext context,
+    TutorNavigationViewModel viewModel,
+    TutorNavigationItem item,
+  ) {
+    if (!item.enabled) {
+      if (item.comingSoon) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'Esta sección estará disponible próximamente en la versión móvil.',
+            ),
+            duration: Duration(seconds: 2),
+          ),
+        );
+      }
+      return;
+    }
+
+    final index = viewModel.items.indexOf(item);
+    viewModel.setSelectedIndex(index);
+
+    if (item.route != null) {
+      Navigator.of(context).pop();
+      if (item.id == 'dashboard') {
+        Navigator.pushReplacementNamed(context, item.route!);
+      }
+    }
   }
 
   void _showLogoutDialog(BuildContext context) {

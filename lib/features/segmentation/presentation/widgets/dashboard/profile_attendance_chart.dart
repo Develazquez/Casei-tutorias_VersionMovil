@@ -3,10 +3,7 @@ import '../../models/segmentation_dashboard_data.dart';
 import '../../theme/segmentation_dashboard_colors.dart';
 
 class ProfileAttendanceChart extends StatelessWidget {
-  const ProfileAttendanceChart({
-    required this.metrics,
-    super.key,
-  });
+  const ProfileAttendanceChart({required this.metrics, super.key});
 
   final List<ProfileMetric> metrics;
 
@@ -57,14 +54,18 @@ class _BarItem extends StatelessWidget {
       children: [
         Text(
           '${metric.averageAttendance.round()}%',
-          style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: color),
+          style: TextStyle(
+            fontSize: 10,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
         ),
         const SizedBox(height: 4),
         Container(
           width: 30,
           height: (metric.averageAttendance / 100) * 100, // Escala relativa
           decoration: BoxDecoration(
-            color: color.withOpacity(0.8),
+            color: color.withValues(alpha: 0.8),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
           ),
         ),
@@ -74,7 +75,10 @@ class _BarItem extends StatelessWidget {
           child: Text(
             metric.label,
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 8, color: SegmentationDashboardColors.textSecondary),
+            style: const TextStyle(
+              fontSize: 8,
+              color: SegmentationDashboardColors.textSecondary,
+            ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
           ),

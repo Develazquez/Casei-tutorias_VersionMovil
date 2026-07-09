@@ -32,6 +32,7 @@ class FilterBar extends StatelessWidget {
             SizedBox(
               width: 320,
               child: DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: selectedProfile,
                 decoration: const InputDecoration(
                   labelText: 'Perfil académico',
@@ -54,6 +55,7 @@ class FilterBar extends StatelessWidget {
             SizedBox(
               width: 320,
               child: DropdownButtonFormField<String>(
+                isExpanded: true,
                 initialValue: selectedProgram,
                 decoration: const InputDecoration(
                   labelText: 'Programa',
