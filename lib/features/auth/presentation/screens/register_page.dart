@@ -28,7 +28,6 @@ class _RegisterPageState extends State<RegisterPage> {
     'director': 'Director',
     'tutor': 'Tutor',
     'docente': 'Docente',
-    'encargado': 'Encargado',
     'alumno': 'Alumno',
   };
 
