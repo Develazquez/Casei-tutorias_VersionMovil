@@ -18,6 +18,7 @@ class AuthSupabaseDataSource {
   final TokenStorage _tokenStorage;
   final FirebaseMessagingService _messagingService;
   static const _networkTimeout = Duration(seconds: 12);
+  static const _supportedRoles = {'director', 'tutor', 'docente', 'alumno'};
 
   Future<UserDto> login({
     required String email,
@@ -60,6 +61,9 @@ class AuthSupabaseDataSource {
     required String role,
     String? telefono,
   }) async {
+    if (!_supportedRoles.contains(role)) {
+      throw const ValidationException('El rol seleccionado no es válido.');
+    }
     if (role == 'alumno') {
       throw const ValidationException(
         'Los alumnos no pueden registrarse directamente. Deben ser importados por el Director.',
