@@ -2,10 +2,9 @@ import 'package:get_it/get_it.dart';
 import 'package:http/http.dart' as http;
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'core/http/http_client.dart';
+import 'core/network/http_client.dart';
 import 'core/security/firebase_messaging_service.dart';
 import 'core/security/secure_storage_service.dart';
-import 'core/security/secure_vault_service.dart';
 import 'core/storage/token_storage.dart';
 import 'features/auth/data/datasources/auth_supabase_data_source.dart';
 import 'features/auth/data/repositories/auth_repository_impl.dart';
@@ -14,14 +13,20 @@ import 'features/auth/domain/usecases/get_current_user_usecase.dart';
 import 'features/auth/domain/usecases/login_usecase.dart';
 import 'features/auth/domain/usecases/logout_usecase.dart';
 import 'features/auth/domain/usecases/register_usecase.dart';
-import 'features/auth/presentation/providers/auth_provider.dart';
+import 'features/auth/presentation/viewmodels/auth_provider.dart';
+import 'features/security/data/repositories/secure_vault_repository_impl.dart';
+import 'features/security/domain/repositories/secure_vault_repository.dart';
+import 'features/security/domain/usecases/clear_secure_vault_usecase.dart';
+import 'features/security/domain/usecases/read_secure_vault_usecase.dart';
+import 'features/security/domain/usecases/save_secure_vault_usecase.dart';
+import 'features/security/presentation/viewmodels/secure_vault_view_model.dart';
 import 'features/segmentation/data/datasources/segmentation_supabase_storage_data_source.dart';
 import 'features/segmentation/data/repositories/segmentation_repository_impl.dart';
 import 'features/segmentation/domain/repositories/segmentation_repository.dart';
 import 'features/segmentation/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'features/segmentation/domain/usecases/get_segmentation_model_artifacts_usecase.dart';
 import 'features/segmentation/domain/usecases/get_segmentation_students_usecase.dart';
-import 'features/segmentation/presentation/providers/segmentation_provider.dart';
+import 'features/segmentation/presentation/viewmodels/segmentation_provider.dart';
 
 final sl = GetIt.instance;
 
@@ -32,7 +37,13 @@ Future<void> init() async {
     ..registerLazySingleton<FirebaseMessagingService>(
       () => FirebaseMessagingService(sl()),
     )
-    ..registerLazySingleton<SecureVaultService>(() => SecureVaultService(sl()))
+    ..registerLazySingleton<SecureVaultRepository>(
+      () => SecureVaultRepositoryImpl(sl()),
+    )
+    ..registerLazySingleton(() => ReadSecureVaultUseCase(sl()))
+    ..registerLazySingleton(() => SaveSecureVaultUseCase(sl()))
+    ..registerLazySingleton(() => ClearSecureVaultUseCase(sl()))
+    ..registerFactory(() => SecureVaultViewModel(sl(), sl(), sl()))
     ..registerLazySingleton<TokenStorage>(() => TokenStorage(sl()))
     ..registerLazySingleton<HttpClient>(() => HttpClient(sl(), sl()))
     ..registerLazySingleton<SupabaseClient>(() => Supabase.instance.client)

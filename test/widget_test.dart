@@ -4,8 +4,8 @@ import 'package:casei_tutorias/features/auth/domain/usecases/get_current_user_us
 import 'package:casei_tutorias/features/auth/domain/usecases/login_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/register_usecase.dart';
-import 'package:casei_tutorias/features/auth/presentation/pages/login_page.dart';
-import 'package:casei_tutorias/features/auth/presentation/providers/auth_provider.dart';
+import 'package:casei_tutorias/features/auth/presentation/screens/login_page.dart';
+import 'package:casei_tutorias/features/auth/presentation/viewmodels/auth_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';

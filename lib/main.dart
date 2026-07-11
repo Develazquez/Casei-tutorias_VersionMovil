@@ -5,8 +5,8 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 import 'app.dart';
 import 'core/constants/app_constants.dart';
 import 'core/security/firebase_messaging_service.dart';
-import 'features/auth/presentation/providers/auth_provider.dart';
-import 'features/segmentation/presentation/providers/segmentation_provider.dart';
+import 'features/auth/presentation/viewmodels/auth_provider.dart';
+import 'features/segmentation/presentation/viewmodels/segmentation_provider.dart';
 import 'injection_container.dart' as di;
 
 Future<void> main() async {

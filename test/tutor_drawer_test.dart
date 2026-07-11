@@ -4,13 +4,15 @@ import 'package:casei_tutorias/features/auth/domain/usecases/get_current_user_us
 import 'package:casei_tutorias/features/auth/domain/usecases/login_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/register_usecase.dart';
-import 'package:casei_tutorias/features/auth/presentation/providers/auth_provider.dart';
-import 'package:casei_tutorias/features/segmentation/presentation/pages/segmentation_dashboard_page.dart';
-import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_provider.dart';
+import 'package:casei_tutorias/features/auth/presentation/viewmodels/auth_provider.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/screens/segmentation_dashboard_page.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/viewmodels/segmentation_provider.dart';
 import 'package:casei_tutorias/features/segmentation/domain/repositories/segmentation_repository.dart';
 import 'package:casei_tutorias/features/segmentation/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:casei_tutorias/features/segmentation/domain/usecases/get_segmentation_model_artifacts_usecase.dart';
 import 'package:casei_tutorias/features/segmentation/domain/usecases/get_segmentation_students_usecase.dart';
 import 'package:casei_tutorias/features/segmentation/domain/entities/dashboard_summary_entity.dart';
+import 'package:casei_tutorias/features/segmentation/domain/entities/segmentation_model_artifacts_entity.dart';
 import 'package:casei_tutorias/features/segmentation/domain/entities/segmentation_student_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -48,6 +50,7 @@ void main() {
             create: (_) => SegmentationProvider(
               GetDashboardSummaryUseCase(segRepo),
               GetSegmentationStudentsUseCase(segRepo),
+              GetSegmentationModelArtifactsUseCase(segRepo),
             ),
           ),
         ],
@@ -113,6 +116,15 @@ class _FakeAuthRepository implements AuthRepository {
 }
 
 class _FakeSegmentationRepository implements SegmentationRepository {
+  @override
+  Future<SegmentationModelArtifactsEntity> getModelArtifacts() async =>
+      const SegmentationModelArtifactsEntity(
+        metrics: [],
+        experiments: [],
+        pcaPoints: [],
+        artifacts: [],
+      );
+
   @override
   Future<DashboardSummaryEntity> getSummary({String? role}) async =>
       const DashboardSummaryEntity(
