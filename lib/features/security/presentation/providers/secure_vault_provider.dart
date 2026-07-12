@@ -5,8 +5,8 @@ import '../../domain/usecases/clear_secure_vault_usecase.dart';
 import '../../domain/usecases/read_secure_vault_usecase.dart';
 import '../../domain/usecases/save_secure_vault_usecase.dart';
 
-class SecureVaultViewModel extends ChangeNotifier {
-  SecureVaultViewModel(this._read, this._save, this._clear);
+class SecureVaultProvider extends ChangeNotifier {
+  SecureVaultProvider(this._read, this._save, this._clear);
 
   final ReadSecureVaultUseCase _read;
   final SaveSecureVaultUseCase _save;

@@ -4,8 +4,8 @@ import '../../domain/entities/segmentation_model_artifacts_entity.dart';
 import '../models/segmentation_model_data.dart';
 import 'segmentation_provider.dart';
 
-class SegmentationModelViewModel extends ChangeNotifier {
-  SegmentationModelViewModel(this._sourceProvider) {
+class SegmentationModelProvider extends ChangeNotifier {
+  SegmentationModelProvider(this._sourceProvider) {
     _sourceProvider.addListener(_onSourceChanged);
     _processData();
   }

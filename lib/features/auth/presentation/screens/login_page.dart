@@ -9,7 +9,7 @@ import '../../../../core/theme/cacei_ui_colors.dart';
 import '../../../../core/util/view_state.dart';
 import '../../../../navigation/app_screen.dart';
 import '../components/auth_text_field.dart';
-import '../viewmodels/auth_provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});

@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-class SegmentationNavigationViewModel extends ChangeNotifier {
+class SegmentationNavigationProvider extends ChangeNotifier {
   int _currentTabIndex = 0;
 
   int get currentTabIndex => _currentTabIndex;

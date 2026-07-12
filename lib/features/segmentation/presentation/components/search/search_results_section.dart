@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../../core/theme/segmentation_dashboard_colors.dart';
-import '../../viewmodels/segmentation_search_view_model.dart';
+import '../../providers/segmentation_search_provider.dart';
 
 class SearchResultsSection extends StatelessWidget {
   const SearchResultsSection({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<SegmentationSearchViewModel>();
+    final viewModel = context.watch<SegmentationSearchProvider>();
     final results = viewModel.results;
 
     return Column(

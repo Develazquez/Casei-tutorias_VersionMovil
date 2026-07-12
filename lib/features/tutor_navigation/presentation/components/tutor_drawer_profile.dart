@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/cacei_ui_colors.dart';
-import '../../../auth/presentation/viewmodels/auth_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 
 class TutorDrawerProfile extends StatelessWidget {
   const TutorDrawerProfile({super.key});

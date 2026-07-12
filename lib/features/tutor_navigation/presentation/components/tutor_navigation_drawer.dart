@@ -2,9 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/cacei_ui_colors.dart';
 import '../../../../navigation/app_screen.dart';
-import '../../../auth/presentation/viewmodels/auth_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../models/tutor_navigation_item.dart';
-import '../viewmodels/tutor_navigation_view_model.dart';
+import '../providers/tutor_navigation_provider.dart';
 import 'tutor_drawer_header.dart';
 import 'tutor_drawer_profile.dart';
 
@@ -13,17 +13,17 @@ class TutorNavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<TutorNavigationViewModel>();
+    final provider = context.watch<TutorNavigationProvider>();
 
     return NavigationDrawer(
       backgroundColor: CaceiUiColors.cardSurface,
       indicatorColor: CaceiUiColors.selectionBackground,
-      selectedIndex: viewModel.selectedIndex,
+      selectedIndex: provider.selectedIndex,
       children: [
         const TutorDrawerHeader(),
-        ...viewModel.items.map((item) {
+        ...provider.items.map((item) {
           final isSelected =
-              viewModel.selectedIndex == viewModel.items.indexOf(item);
+              provider.selectedIndex == provider.items.indexOf(item);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             child: ListTile(
@@ -54,7 +54,7 @@ class TutorNavigationDrawer extends StatelessWidget {
                       : CaceiUiColors.secondaryText,
                 ),
               ),
-              onTap: () => _selectDestination(context, viewModel, item),
+              onTap: () => _selectDestination(context, provider, item),
             ),
           );
         }),
@@ -86,7 +86,7 @@ class TutorNavigationDrawer extends StatelessWidget {
 
   void _selectDestination(
     BuildContext context,
-    TutorNavigationViewModel viewModel,
+    TutorNavigationProvider provider,
     TutorNavigationItem item,
   ) {
     if (!item.enabled) {
@@ -103,8 +103,8 @@ class TutorNavigationDrawer extends StatelessWidget {
       return;
     }
 
-    final index = viewModel.items.indexOf(item);
-    viewModel.setSelectedIndex(index);
+    final index = provider.items.indexOf(item);
+    provider.setSelectedIndex(index);
 
     if (item.route != null) {
       Navigator.of(context).pop();

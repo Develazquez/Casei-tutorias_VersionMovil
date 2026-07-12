@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../features/auth/presentation/viewmodels/auth_provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../navigation/app_navigator.dart';
 import '../../navigation/app_screen.dart';
 import 'secure_storage_service.dart';

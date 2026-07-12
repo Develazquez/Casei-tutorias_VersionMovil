@@ -4,9 +4,10 @@ import 'package:casei_tutorias/features/auth/domain/usecases/get_current_user_us
 import 'package:casei_tutorias/features/auth/domain/usecases/login_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/register_usecase.dart';
-import 'package:casei_tutorias/features/auth/presentation/viewmodels/auth_provider.dart';
+import 'package:casei_tutorias/features/auth/presentation/providers/auth_provider.dart';
 import 'package:casei_tutorias/features/segmentation/presentation/screens/segmentation_dashboard_page.dart';
-import 'package:casei_tutorias/features/segmentation/presentation/viewmodels/segmentation_provider.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_provider.dart';
+import 'package:casei_tutorias/features/tutor_navigation/presentation/providers/tutor_navigation_provider.dart';
 import 'package:casei_tutorias/features/segmentation/domain/repositories/segmentation_repository.dart';
 import 'package:casei_tutorias/features/segmentation/domain/usecases/get_dashboard_summary_usecase.dart';
 import 'package:casei_tutorias/features/segmentation/domain/usecases/get_segmentation_model_artifacts_usecase.dart';
@@ -53,6 +54,7 @@ void main() {
               GetSegmentationModelArtifactsUseCase(segRepo),
             ),
           ),
+          ChangeNotifierProvider(create: (_) => TutorNavigationProvider()),
         ],
         child: const MaterialApp(home: SegmentationDashboardPage()),
       ),

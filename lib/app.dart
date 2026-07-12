@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import 'core/security/security_shell.dart';
 import 'core/security/secure_storage_service.dart';
 import 'core/theme/app_theme.dart';
-import 'injection_container.dart' as di;
 import 'navigation/app_navigator.dart';
 import 'navigation/app_router.dart';
 
@@ -19,7 +19,7 @@ class CaseiTutoriasApp extends StatelessWidget {
       theme: AppTheme.light,
       builder: (context, child) {
         return SecurityShell(
-          secureStorage: di.sl<SecureStorageService>(),
+          secureStorage: context.read<SecureStorageService>(),
           child: child ?? const SizedBox.shrink(),
         );
       },

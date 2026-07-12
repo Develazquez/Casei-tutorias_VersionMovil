@@ -3,8 +3,8 @@ import 'package:provider/provider.dart';
 
 import '../../models/segmentation_dashboard_data.dart';
 import '../../../../../core/theme/segmentation_dashboard_colors.dart';
-import '../../viewmodels/segmentation_dashboard_view_model.dart';
-import '../../viewmodels/segmentation_provider.dart';
+import '../../providers/segmentation_dashboard_provider.dart';
+import '../../providers/segmentation_provider.dart';
 import 'academic_metric_card.dart';
 import 'academic_radar_chart.dart';
 import 'model_quality_card.dart';
@@ -19,7 +19,7 @@ class SegmentationDashboardView extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<SegmentationDashboardViewModel>();
+    final viewModel = context.watch<SegmentationDashboardProvider>();
     final data = viewModel.data;
 
     if (viewModel.isLoading) {

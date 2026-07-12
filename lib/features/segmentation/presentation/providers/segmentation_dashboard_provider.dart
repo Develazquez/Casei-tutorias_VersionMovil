@@ -4,8 +4,8 @@ import '../../domain/entities/segmentation_student_entity.dart';
 import '../models/segmentation_dashboard_data.dart';
 import 'segmentation_provider.dart';
 
-class SegmentationDashboardViewModel extends ChangeNotifier {
-  SegmentationDashboardViewModel(this._sourceProvider) {
+class SegmentationDashboardProvider extends ChangeNotifier {
+  SegmentationDashboardProvider(this._sourceProvider) {
     _sourceProvider.addListener(_onSourceChanged);
     _processData();
   }

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../constants/app_constants.dart';
-import '../../features/auth/presentation/viewmodels/auth_provider.dart';
+import '../../features/auth/presentation/providers/auth_provider.dart';
 import 'fake_gps_guard.dart';
 import 'secure_storage_service.dart';
 import 'session_guard.dart';
