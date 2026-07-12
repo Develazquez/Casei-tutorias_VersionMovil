@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import '../../models/segmentation_dashboard_data.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class ProfileDistributionChart extends StatelessWidget {
   const ProfileDistributionChart({required this.metrics, super.key});
@@ -10,42 +10,80 @@ class ProfileDistributionChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Distribución por perfil',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: SegmentationDashboardColors.textPrimary,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 20),
-          Row(
-            children: [
-              SizedBox(
-                width: 120,
-                height: 120,
-                child: CustomPaint(painter: _DoughnutPainter(metrics)),
-              ),
-              const SizedBox(width: 20),
-              Expanded(
-                child: Column(
-                  children: metrics.map((m) => _LegendItem(metric: m)).toList(),
-                ),
-              ),
-            ],
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final isNarrow = constraints.maxWidth < 300;
+              return isNarrow
+                ? Column(
+                    children: [
+                      _DoughnutWidget(metrics: metrics, appColors: appColors),
+                      const SizedBox(height: 20),
+                      _LegendWidget(metrics: metrics),
+                    ],
+                  )
+                : Row(
+                    children: [
+                      _DoughnutWidget(metrics: metrics, appColors: appColors),
+                      const SizedBox(width: 20),
+                      Expanded(
+                        child: _LegendWidget(metrics: metrics),
+                      ),
+                    ],
+                  );
+            },
           ),
         ],
       ),
+    );
+  }
+}
+
+class _DoughnutWidget extends StatelessWidget {
+  const _DoughnutWidget({required this.metrics, required this.appColors});
+  final List<ProfileMetric> metrics;
+  final AppThemeColors appColors;
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 120,
+      height: 120,
+      child: CustomPaint(painter: _DoughnutPainter(metrics, appColors)),
+    );
+  }
+}
+
+class _LegendWidget extends StatelessWidget {
+  const _LegendWidget({required this.metrics});
+  final List<ProfileMetric> metrics;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: metrics.map((m) => _LegendItem(metric: m)).toList(),
     );
   }
 }
@@ -56,6 +94,10 @@ class _LegendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    final color = _getColor(appColors, metric.label);
+
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 4),
       child: Row(
@@ -64,7 +106,7 @@ class _LegendItem extends StatelessWidget {
             width: 10,
             height: 10,
             decoration: BoxDecoration(
-              color: _getColor(metric.label),
+              color: color,
               shape: BoxShape.circle,
             ),
           ),
@@ -72,9 +114,9 @@ class _LegendItem extends StatelessWidget {
           Expanded(
             child: Text(
               metric.label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
-                color: SegmentationDashboardColors.textPrimary,
+                color: theme.colorScheme.onSurface,
               ),
               overflow: TextOverflow.ellipsis,
             ),
@@ -88,17 +130,18 @@ class _LegendItem extends StatelessWidget {
     );
   }
 
-  Color _getColor(String label) {
-    if (label == 'Regular') return SegmentationDashboardColors.profileRegular;
-    if (label == 'Atípico') return SegmentationDashboardColors.profileAtypical;
-    if (label == 'Crítico') return SegmentationDashboardColors.profileCritical;
-    return SegmentationDashboardColors.profileModerate;
+  Color _getColor(AppThemeColors appColors, String label) {
+    if (label == 'Regular') return appColors.profileRegular;
+    if (label == 'Atípico') return appColors.profileAtypical;
+    if (label == 'Crítico') return appColors.profileCritical;
+    return appColors.profileModerateRisk;
   }
 }
 
 class _DoughnutPainter extends CustomPainter {
-  _DoughnutPainter(this.metrics);
+  _DoughnutPainter(this.metrics, this.appColors);
   final List<ProfileMetric> metrics;
+  final AppThemeColors appColors;
 
   @override
   void paint(Canvas canvas, Size size) {
@@ -112,7 +155,7 @@ class _DoughnutPainter extends CustomPainter {
     final total = metrics.fold<int>(0, (sum, m) => sum + m.count);
 
     if (total == 0) {
-      paint.color = SegmentationDashboardColors.border;
+      paint.color = appColors.cardBorder;
       canvas.drawCircle(center, radius - 10, paint);
       return;
     }
@@ -132,10 +175,10 @@ class _DoughnutPainter extends CustomPainter {
   }
 
   Color _getColor(String label) {
-    if (label == 'Regular') return SegmentationDashboardColors.profileRegular;
-    if (label == 'Atípico') return SegmentationDashboardColors.profileAtypical;
-    if (label == 'Crítico') return SegmentationDashboardColors.profileCritical;
-    return SegmentationDashboardColors.profileModerate;
+    if (label == 'Regular') return appColors.profileRegular;
+    if (label == 'Atípico') return appColors.profileAtypical;
+    if (label == 'Crítico') return appColors.profileCritical;
+    return appColors.profileModerateRisk;
   }
 
   @override

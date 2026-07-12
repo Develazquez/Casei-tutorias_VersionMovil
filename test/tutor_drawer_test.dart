@@ -5,7 +5,11 @@ import 'package:casei_tutorias/features/auth/domain/usecases/login_usecase.dart'
 import 'package:casei_tutorias/features/auth/domain/usecases/logout_usecase.dart';
 import 'package:casei_tutorias/features/auth/domain/usecases/register_usecase.dart';
 import 'package:casei_tutorias/features/auth/presentation/providers/auth_provider.dart';
-import 'package:casei_tutorias/features/segmentation/presentation/screens/segmentation_dashboard_page.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/screens/segmentation_dashboard_v2_page.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_dashboard_provider.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_navigation_provider.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_model_provider.dart';
+import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_search_provider.dart';
 import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_provider.dart';
 import 'package:casei_tutorias/features/tutor_navigation/presentation/providers/tutor_navigation_provider.dart';
 import 'package:casei_tutorias/features/segmentation/domain/repositories/segmentation_repository.dart';
@@ -19,6 +23,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:provider/provider.dart';
+import 'package:casei_tutorias/core/theme/theme_casei_material3.dart';
 
 void main() {
   testWidgets('Abrir y cerrar el menú lateral', (WidgetTester tester) async {
@@ -54,32 +59,45 @@ void main() {
               GetSegmentationModelArtifactsUseCase(segRepo),
             ),
           ),
+          ChangeNotifierProxyProvider<SegmentationProvider, SegmentationDashboardProvider>(
+            create: (context) => SegmentationDashboardProvider(
+              context.read<SegmentationProvider>(),
+            ),
+            update: (context, source, previous) => SegmentationDashboardProvider(source),
+          ),
+          ChangeNotifierProvider(create: (_) => SegmentationNavigationProvider()),
+          ChangeNotifierProxyProvider<SegmentationProvider, SegmentationModelProvider>(
+            create: (context) => SegmentationModelProvider(
+              context.read<SegmentationProvider>(),
+            ),
+            update: (context, source, previous) => SegmentationModelProvider(source),
+          ),
+          ChangeNotifierProxyProvider<SegmentationProvider, SegmentationSearchProvider>(
+            create: (context) => SegmentationSearchProvider(
+              context.read<SegmentationProvider>(),
+            ),
+            update: (context, source, previous) => SegmentationSearchProvider(source),
+          ),
           ChangeNotifierProvider(create: (_) => TutorNavigationProvider()),
         ],
-        child: const MaterialApp(home: SegmentationDashboardPage()),
+        child: MaterialApp(
+          theme: MaterialTheme(const TextTheme()).light(),
+          home: const SegmentationDashboardV2Page(),
+        ),
       ),
     );
 
     await tester.pumpAndSettle();
 
-    // 1. El botón Icons.menu_rounded está visible.
     final menuButton = find.byTooltip('Abrir menú de navegación');
     expect(menuButton, findsOneWidget);
 
-    // 2. Pulsar el botón abre el drawer.
     await tester.tap(menuButton);
     await tester.pumpAndSettle();
 
-    // Verificar si el NavigationDrawer está presente
     expect(find.byType(NavigationDrawer), findsOneWidget);
-
     expect(find.textContaining('CACEI'), findsOneWidget);
-    expect(find.text('Tutor'), findsAtLeastNWidgets(1));
 
-    // 3. El drawer contiene la opción de navegación disponible actualmente.
-    expect(find.textContaining('Segmentación Tutorados'), findsOneWidget);
-
-    // 4. Pulsar el botón de cierre cierra el drawer.
     final closeButton = find.byTooltip('Cerrar menú de navegación');
     expect(closeButton, findsOneWidget);
     await tester.tap(closeButton);

@@ -4,34 +4,34 @@ class SegmentationDashboardData {
   const SegmentationDashboardData({
     required this.activeCount,
     required this.alumniCount,
-    required this.averageGrade,
-    required this.averageAttendance,
-    required this.trackingCount,
+    required this.urgentTrackingCount,
+    required this.generationCount,
     required this.profileMetrics,
     required this.priorityStudents,
     required this.totalStudents,
+    required this.generationMetrics,
     this.isMock = false,
   });
 
   final int activeCount;
   final int alumniCount;
-  final double averageGrade;
-  final double averageAttendance;
-  final int trackingCount;
+  final int urgentTrackingCount;
+  final int generationCount;
   final List<ProfileMetric> profileMetrics;
   final List<SegmentationStudentEntity> priorityStudents;
   final int totalStudents;
+  final List<GenerationMetric> generationMetrics;
   final bool isMock;
 
   static const empty = SegmentationDashboardData(
     activeCount: 0,
     alumniCount: 0,
-    averageGrade: 0,
-    averageAttendance: 0,
-    trackingCount: 0,
+    urgentTrackingCount: 0,
+    generationCount: 0,
     profileMetrics: [],
     priorityStudents: [],
     totalStudents: 0,
+    generationMetrics: [],
   );
 }
 
@@ -42,6 +42,7 @@ class ProfileMetric {
     required this.percentage,
     required this.averageGrade,
     required this.averageAttendance,
+    this.description = '',
   });
 
   final String label;
@@ -49,4 +50,21 @@ class ProfileMetric {
   final double percentage;
   final double averageGrade;
   final double averageAttendance;
+  final String description;
+}
+
+class GenerationMetric {
+  const GenerationMetric({
+    required this.generation,
+    required this.maleCount,
+    required this.femaleCount,
+    required this.totalCount,
+    required this.students,
+  });
+
+  final String generation;
+  final int maleCount;
+  final int femaleCount;
+  final int totalCount;
+  final List<SegmentationStudentEntity> students;
 }

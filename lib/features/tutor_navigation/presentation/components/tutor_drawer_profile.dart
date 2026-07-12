@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/theme/cacei_ui_colors.dart';
+import '../../../../core/theme/theme_casei_material3.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 
 class TutorDrawerProfile extends StatelessWidget {
@@ -10,6 +10,8 @@ class TutorDrawerProfile extends StatelessWidget {
   Widget build(BuildContext context) {
     final authProvider = context.watch<AuthProvider>();
     final user = authProvider.user;
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
 
     // Datos mock si no hay usuario real (según instrucciones)
     final String name = user?.name ?? 'Diego Velázquez Méndez'; // Mock
@@ -32,11 +34,11 @@ class TutorDrawerProfile extends StatelessWidget {
         children: [
           CircleAvatar(
             radius: 24,
-            backgroundColor: CaceiUiColors.primary,
+            backgroundColor: theme.colorScheme.primary,
             child: Text(
               initials,
-              style: const TextStyle(
-                color: Colors.white,
+              style: TextStyle(
+                color: theme.colorScheme.onPrimary,
                 fontWeight: FontWeight.bold,
               ),
             ),
@@ -49,17 +51,17 @@ class TutorDrawerProfile extends StatelessWidget {
               children: [
                 Text(
                   name,
-                  style: Theme.of(context).textTheme.titleSmall?.copyWith(
+                  style: theme.textTheme.titleSmall?.copyWith(
                     fontWeight: FontWeight.bold,
-                    color: CaceiUiColors.titleText,
+                    color: theme.colorScheme.onSurface,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),
                 Text(
                   role.substring(0, 1).toUpperCase() + role.substring(1),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                    color: CaceiUiColors.secondaryText,
+                  style: theme.textTheme.bodySmall?.copyWith(
+                    color: appColors.mutedText,
                   ),
                 ),
               ],

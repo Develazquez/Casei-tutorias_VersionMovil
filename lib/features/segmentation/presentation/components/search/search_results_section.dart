@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 import '../../providers/segmentation_search_provider.dart';
 
 class SearchResultsSection extends StatelessWidget {
@@ -10,6 +10,8 @@ class SearchResultsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<SegmentationSearchProvider>();
     final results = viewModel.results;
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -19,28 +21,28 @@ class SearchResultsSection extends StatelessWidget {
           children: [
             Text(
               'Resultados: ${viewModel.totalResults}',
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 12,
                 fontWeight: FontWeight.bold,
-                color: SegmentationDashboardColors.textSecondary,
+                color: appColors.mutedText,
               ),
             ),
-            const Icon(
+            Icon(
               Icons.sort_rounded,
-              color: SegmentationDashboardColors.textSecondary,
+              color: appColors.mutedText,
               size: 18,
             ),
           ],
         ),
         const SizedBox(height: 12),
         if (results.isEmpty)
-          const Padding(
-            padding: EdgeInsets.symmetric(vertical: 40),
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: Text(
                 'No encontramos resultados con estos criterios.',
                 style: TextStyle(
-                  color: SegmentationDashboardColors.textSecondary,
+                  color: appColors.mutedText,
                   fontSize: 13,
                 ),
               ),
@@ -60,15 +62,17 @@ class _StudentResultTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getProfileColor(student.profileLabel);
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    final color = _getProfileColor(appColors, student.profileLabel);
 
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Row(
         children: [
@@ -91,17 +95,17 @@ class _StudentResultTile extends StatelessWidget {
               children: [
                 Text(
                   student.name,
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 13,
                     fontWeight: FontWeight.bold,
-                    color: SegmentationDashboardColors.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
                 Text(
                   '${student.id} · ${student.program}',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 10,
-                    color: SegmentationDashboardColors.textSecondary,
+                    color: appColors.mutedText,
                   ),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
@@ -125,16 +129,16 @@ class _StudentResultTile extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 10,
                   color: student.attendanceRate < 60
-                      ? Colors.red
-                      : Colors.green,
+                      ? theme.colorScheme.error
+                      : appColors.profileAtypical,
                 ),
               ),
             ],
           ),
           const SizedBox(width: 8),
-          const Icon(
+          Icon(
             Icons.chevron_right_rounded,
-            color: SegmentationDashboardColors.border,
+            color: appColors.cardBorder,
           ),
         ],
       ),
@@ -147,16 +151,16 @@ class _StudentResultTile extends StatelessWidget {
     return name[0];
   }
 
-  Color _getProfileColor(String label) {
+  Color _getProfileColor(AppThemeColors appColors, String label) {
     if (label.contains('Regular')) {
-      return SegmentationDashboardColors.profileRegular;
+      return appColors.profileRegular;
     }
     if (label.contains('Atípico')) {
-      return SegmentationDashboardColors.profileAtypical;
+      return appColors.profileAtypical;
     }
     if (label.contains('Crítico')) {
-      return SegmentationDashboardColors.profileCritical;
+      return appColors.profileCritical;
     }
-    return SegmentationDashboardColors.profileModerate;
+    return appColors.profileModerateRisk;
   }
 }

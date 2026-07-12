@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 import '../../providers/segmentation_model_provider.dart';
 import '../dashboard/academic_radar_chart.dart';
 import 'experimental_comparison_card.dart';
@@ -16,6 +16,8 @@ class SegmentationModelView extends StatelessWidget {
   Widget build(BuildContext context) {
     final provider = context.watch<SegmentationModelProvider>();
     final data = provider.data;
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
 
     if (provider.isLoading) {
       return const Center(child: CircularProgressIndicator());
@@ -27,8 +29,8 @@ class SegmentationModelView extends StatelessWidget {
           child: Text(
             provider.errorMessage!,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              color: SegmentationDashboardColors.textSecondary,
+            style: TextStyle(
+              color: appColors.mutedText,
             ),
           ),
         ),
@@ -37,13 +39,13 @@ class SegmentationModelView extends StatelessWidget {
     if (data.qualityMetrics.isEmpty &&
         data.experiments.isEmpty &&
         data.pcaPoints.isEmpty) {
-      return const Center(
+      return Center(
         child: Padding(
-          padding: EdgeInsets.all(24),
+          padding: const EdgeInsets.all(24),
           child: Text(
             'No hay artefactos de modelo disponibles en Supabase Storage.',
             textAlign: TextAlign.center,
-            style: TextStyle(color: SegmentationDashboardColors.textSecondary),
+            style: TextStyle(color: appColors.mutedText),
           ),
         ),
       );
@@ -52,21 +54,19 @@ class SegmentationModelView extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
+        Text(
           'Modelo K-Means',
           style: TextStyle(
             fontSize: 20,
             fontWeight: FontWeight.bold,
-            fontFamily: 'Roboto',
-            color: SegmentationDashboardColors.textPrimary,
+            color: theme.colorScheme.onSurface,
           ),
         ),
-        const Text(
+        Text(
           'Resultados y métricas del modelo de segmentación',
           style: TextStyle(
             fontSize: 12,
-            fontFamily: 'Roboto',
-            color: SegmentationDashboardColors.textSecondary,
+            color: appColors.mutedText,
           ),
         ),
         const SizedBox(height: 18),

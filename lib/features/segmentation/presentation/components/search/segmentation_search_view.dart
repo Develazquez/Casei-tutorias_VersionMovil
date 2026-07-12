@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 import '../../providers/segmentation_search_provider.dart';
 import 'quick_access_section.dart';
 import 'quick_filters_section.dart';
@@ -13,30 +13,29 @@ class SegmentationSearchView extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<SegmentationSearchProvider>();
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        const Text(
-          'Búsqueda',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.bold,
-            color: SegmentationDashboardColors.textPrimary,
-          ),
+        Text(
+          'Búsqueda inteligente',
+          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
         ),
-        const Text(
-          'Consulta y filtra la información de tus tutorados',
+        Text(
+          'Consulta y filtra la información de tus tutorados con criterios avanzados.',
           style: TextStyle(
             fontSize: 12,
-            color: SegmentationDashboardColors.textSecondary,
+            color: appColors.mutedText,
           ),
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 24),
         TutorSearchBarCard(
           onChanged: provider.onTextChanged,
           onClear: provider.clearFilters,
         ),
-        const SizedBox(height: 18),
+        const SizedBox(height: 24),
         const QuickFiltersSection(),
         const SizedBox(height: 24),
         if (provider.isSearching)

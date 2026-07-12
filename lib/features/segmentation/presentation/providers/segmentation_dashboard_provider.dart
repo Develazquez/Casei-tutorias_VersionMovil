@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../../../../core/util/view_state.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
 import '../models/segmentation_dashboard_data.dart';
+import '../util/tutor_logic_utils.dart';
 import 'segmentation_provider.dart';
 
 class SegmentationDashboardProvider extends ChangeNotifier {
@@ -29,7 +30,7 @@ class SegmentationDashboardProvider extends ChangeNotifier {
   }
 
   void _processData() {
-    final students = _sourceProvider.students;
+    final students = _sourceProvider.allTutorStudents;
     if (students.isEmpty) {
       _data = SegmentationDashboardData.empty;
       return;
@@ -37,19 +38,21 @@ class SegmentationDashboardProvider extends ChangeNotifier {
 
     final total = students.length;
 
-    // Asumimos que todos son activos por falta de campo 'estado' en entidad real
-    final activeCount = total;
-    final alumniCount = 0; // Sin datos
+    // Summary Metrics
+    final activeCount = students.where((s) => s.period.isNotEmpty).length;
+    final alumniCount = students.where((s) => s.period.isEmpty).length;
+    
+    final urgentTracking = students.where((s) {
+      final profile = TutorLogicUtils.normalizeProfileLabel(s.profileLabel);
+      return profile == 'Crítico' || s.delayedSubjects > 0;
+    }).length;
 
-    final avgGrade = _calculateAverage(students.map((e) => e.averageGrade));
-    final avgAttendance = _calculateAverage(
-      students.map((e) => e.attendanceRate),
-    );
+    final generationsSet = students.map((s) => s.cohort).toSet();
 
-    // Agrupar por perfiles (Normalización de etiquetas)
+    // Profile Metrics
     final profileGroups = <String, List<SegmentationStudentEntity>>{};
     for (final student in students) {
-      final label = _normalizeLabel(student.profileLabel);
+      final label = TutorLogicUtils.normalizeProfileLabel(student.profileLabel);
       profileGroups.putIfAbsent(label, () => []).add(student);
     }
 
@@ -60,42 +63,45 @@ class SegmentationDashboardProvider extends ChangeNotifier {
         count: group.length,
         percentage: (group.length / total) * 100,
         averageGrade: _calculateAverage(group.map((e) => e.averageGrade)),
-        averageAttendance: _calculateAverage(
-          group.map((e) => e.attendanceRate),
-        ),
+        averageAttendance: _calculateAverage(group.map((e) => e.attendanceRate)),
+        description: _getProfileDescription(entry.key),
       );
     }).toList();
 
-    // Ordenar métricas por importancia visual (Crítico primero, etc.)
-    profileMetrics.sort(
-      (a, b) => _labelPriority(b.label).compareTo(_labelPriority(a.label)),
-    );
+    profileMetrics.sort((a, b) => _labelPriority(b.label).compareTo(_labelPriority(a.label)));
 
-    // Alumnos prioritarios: Críticos y Riesgo Moderado
-    final priorityList = students.where((s) {
-      final label = _normalizeLabel(s.profileLabel);
-      return label.contains('Crítico') || label.contains('Riesgo');
-    }).toList();
+    // Generation Metrics
+    final generationGroups = <String, List<SegmentationStudentEntity>>{};
+    for (final student in students) {
+      generationGroups.putIfAbsent(student.cohort, () => []).add(student);
+    }
 
-    // Ordenar prioritarios: Críticos primero, luego por promedio más bajo
-    priorityList.sort((a, b) {
-      final aCrit = a.profileLabel.contains('Crítico') ? 1 : 0;
-      final bCrit = b.profileLabel.contains('Crítico') ? 1 : 0;
-      if (aCrit != bCrit) return bCrit.compareTo(aCrit);
-      return a.averageGrade.compareTo(b.averageGrade);
-    });
+    final generationMetrics = generationGroups.entries.map((entry) {
+      final group = entry.value;
+      final males = group.where((s) => TutorLogicUtils.getStudentGender(s) == 'Hombre').length;
+      final females = group.length - males;
+      return GenerationMetric(
+        generation: entry.key,
+        maleCount: males,
+        femaleCount: females,
+        totalCount: group.length,
+        students: group,
+      );
+    }).toList()..sort((a, b) => b.generation.compareTo(a.generation));
+
+    // Priority Students
+    final priorityList = List<SegmentationStudentEntity>.from(students)
+      ..sort((a, b) => TutorLogicUtils.calculatePriorityScore(b).compareTo(TutorLogicUtils.calculatePriorityScore(a)));
 
     _data = SegmentationDashboardData(
       activeCount: activeCount,
       alumniCount: alumniCount,
-      averageGrade: avgGrade,
-      averageAttendance: avgAttendance,
-      trackingCount: priorityList.length,
+      urgentTrackingCount: urgentTracking,
+      generationCount: generationsSet.length,
       profileMetrics: profileMetrics,
-      priorityStudents: priorityList.take(4).toList(),
+      priorityStudents: priorityList.take(6).toList(),
       totalStudents: total,
-      // Detectamos si es mock basándonos en la cantidad exacta del mock (9)
-      // o si no hay alumnos reales.
+      generationMetrics: generationMetrics,
       isMock: total == 9,
     );
   }
@@ -105,12 +111,14 @@ class SegmentationDashboardProvider extends ChangeNotifier {
     return values.reduce((a, b) => a + b) / values.length;
   }
 
-  String _normalizeLabel(String label) {
-    if (label.contains('Regular')) return 'Regular';
-    if (label.contains('Atípico')) return 'Atípico';
-    if (label.contains('Crítico')) return 'Crítico';
-    if (label.contains('Riesgo')) return 'Riesgo moderado';
-    return label;
+  String _getProfileDescription(String label) {
+    return switch (label) {
+      'Regular' => 'Desempeño estable y asistencia constante.',
+      'Atípico' => 'Buen promedio pero con baja asistencia o viceversa.',
+      'Crítico' => 'Riesgo alto de reprobación o deserción.',
+      'Riesgo moderado' => 'Requiere atención para evitar rezago.',
+      _ => '',
+    };
   }
 
   int _labelPriority(String label) {

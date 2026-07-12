@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/cacei_ui_colors.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class SegmentationDashboardHeader extends StatelessWidget {
   const SegmentationDashboardHeader({
@@ -18,8 +17,11 @@ class SegmentationDashboardHeader extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Container(
-      color: SegmentationDashboardColors.headerBlue,
+      color: appColors.sidebar,
       padding: const EdgeInsets.fromLTRB(16, 8, 16, 0),
       child: Column(
         children: [
@@ -32,11 +34,11 @@ class SegmentationDashboardHeader extends StatelessWidget {
               ),
               CircleAvatar(
                 radius: 18,
-                backgroundColor: CaceiUiColors.avatarBackground,
+                backgroundColor: Colors.white24,
                 child: Text(
                   userName.isNotEmpty ? userName[0].toUpperCase() : '?',
                   style: const TextStyle(
-                    color: SegmentationDashboardColors.headerBlue,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
@@ -51,7 +53,6 @@ class SegmentationDashboardHeader extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
-                        fontFamily: 'Roboto',
                         fontSize: 14,
                       ),
                       maxLines: 1,
@@ -61,7 +62,6 @@ class SegmentationDashboardHeader extends StatelessWidget {
                       'Tutor · CACEI',
                       style: TextStyle(
                         color: Colors.white70,
-                        fontFamily: 'Roboto',
                         fontSize: 12,
                       ),
                     ),
@@ -80,7 +80,7 @@ class SegmentationDashboardHeader extends StatelessWidget {
                     Icon(Icons.bolt, color: Colors.amber, size: 14),
                     SizedBox(width: 4),
                     Text(
-                      'K-Means K=2',
+                      'K-Means K=3 · pca_90',
                       style: TextStyle(color: Colors.white, fontSize: 10),
                     ),
                   ],
@@ -116,38 +116,35 @@ class _DashboardTabs extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-        _TabItem(
-          label: 'Dashboard',
-          icon: Icons.dashboard_rounded,
-          isActive: currentIndex == 0,
-          onTap: () => onTabChanged(0),
-        ),
-        _TabItem(
-          label: 'Modelo',
-          icon: Icons.account_tree_outlined,
-          isActive: currentIndex == 1,
-          onTap: () => onTabChanged(1),
-        ),
-        _TabItem(
-          label: 'Búsqueda',
-          icon: Icons.search_rounded,
-          isActive: currentIndex == 2,
-          onTap: () {
-            _showComingSoon(context);
-            onTabChanged(2);
-          },
-        ),
-      ],
-    );
-  }
-
-  void _showComingSoon(BuildContext context) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Esta sección se implementará en la siguiente etapa.'),
-        duration: Duration(seconds: 2),
+    return SingleChildScrollView(
+      scrollDirection: Axis.horizontal,
+      child: Row(
+        children: [
+          _TabItem(
+            label: 'Dashboard',
+            icon: Icons.dashboard_rounded,
+            isActive: currentIndex == 0,
+            onTap: () => onTabChanged(0),
+          ),
+          _TabItem(
+            label: 'Modelo',
+            icon: Icons.account_tree_outlined,
+            isActive: currentIndex == 1,
+            onTap: () => onTabChanged(1),
+          ),
+          _TabItem(
+            label: 'Búsqueda',
+            icon: Icons.search_rounded,
+            isActive: currentIndex == 2,
+            onTap: () => onTabChanged(2),
+          ),
+          _TabItem(
+            label: 'Alumnos',
+            icon: Icons.people_outline_rounded,
+            isActive: currentIndex == 3,
+            onTap: () => onTabChanged(3),
+          ),
+        ],
       ),
     );
   }
@@ -168,6 +165,9 @@ class _TabItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -176,7 +176,7 @@ class _TabItem extends StatelessWidget {
           border: Border(
             bottom: BorderSide(
               color: isActive
-                  ? SegmentationDashboardColors.primaryBlue
+                  ? appColors.sidebarSelected
                   : Colors.transparent,
               width: 3,
             ),
@@ -195,7 +195,6 @@ class _TabItem extends StatelessWidget {
               style: TextStyle(
                 color: isActive ? Colors.white : Colors.white54,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                fontFamily: 'Roboto',
                 fontSize: 13,
               ),
             ),

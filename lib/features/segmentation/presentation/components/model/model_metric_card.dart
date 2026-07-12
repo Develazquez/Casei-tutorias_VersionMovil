@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/segmentation_model_data.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class ModelMetricCard extends StatelessWidget {
   const ModelMetricCard({required this.metric, super.key});
@@ -9,12 +9,15 @@ class ModelMetricCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Container(
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -26,12 +29,12 @@ class ModelMetricCard extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(6),
                 decoration: BoxDecoration(
-                  color: SegmentationDashboardColors.background,
+                  color: theme.colorScheme.surfaceContainer,
                   shape: BoxShape.circle,
                 ),
                 child: Icon(
                   metric.icon,
-                  color: SegmentationDashboardColors.primaryBlue,
+                  color: theme.colorScheme.primary,
                   size: 16,
                 ),
               ),
@@ -39,7 +42,7 @@ class ModelMetricCard extends StatelessWidget {
                 metric.isUpGood
                     ? Icons.trending_up_rounded
                     : Icons.trending_down_rounded,
-                color: Colors.green,
+                color: appColors.profileAtypical,
                 size: 16,
               ),
             ],
@@ -51,29 +54,26 @@ class ModelMetricCard extends StatelessWidget {
               metric.value > 1000
                   ? metric.value.toStringAsFixed(0)
                   : metric.value.toStringAsFixed(3),
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 18,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
-                color: SegmentationDashboardColors.textPrimary,
+                color: theme.colorScheme.onSurface,
               ),
             ),
           ),
           Text(
             metric.name,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 11,
               fontWeight: FontWeight.bold,
-              fontFamily: 'Roboto',
-              color: SegmentationDashboardColors.textPrimary,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           Text(
             metric.description,
-            style: const TextStyle(
+            style: TextStyle(
               fontSize: 10,
-              fontFamily: 'Roboto',
-              color: SegmentationDashboardColors.textSecondary,
+              color: appColors.mutedText,
             ),
           ),
         ],

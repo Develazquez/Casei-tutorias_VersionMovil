@@ -1,6 +1,7 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="main.dart" type="FlutterRunConfigurationType" factoryName="Flutter">
+    <option name="additionalArgs" value="--dart-define=EXPO_PUBLIC_SUPABASE_URL=https://msgqdkhjdpidwbhwnhgr.supabase.co --dart-define=EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1zZ3Fka2hqZHBpZHdiaHduaGdyIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxNTkxMDcsImV4cCI6MjA5NDczNTEwN30.LGYFlUNfavCKqOYef3fEojUe0Njdhw9a73y3hNBCeAE --dart-define=EXPO_PUBLIC_SEGMENTATION_STORAGE_BUCKET=academic-segmentation --dart-define=EXPO_PUBLIC_SEGMENTATION_STORAGE_PREFIX=latest" />
     <option name="filePath" value="$PROJECT_DIR$/lib/main.dart" />
-    <method />
+    <method v="2" />
   </configuration>
 </component>

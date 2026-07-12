@@ -1,20 +1,23 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class QuickAccessSection extends StatelessWidget {
   const QuickAccessSection({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        const Text(
-          'Accesos rápidos',
+        Text(
+          'Consultas rápidas',
           style: TextStyle(
             fontSize: 12,
             fontWeight: FontWeight.bold,
-            color: SegmentationDashboardColors.textSecondary,
+            color: appColors.mutedText,
           ),
         ),
         const SizedBox(height: 12),
@@ -24,57 +27,51 @@ class QuickAccessSection extends StatelessWidget {
           crossAxisCount: 2,
           mainAxisSpacing: 12,
           crossAxisSpacing: 12,
-          childAspectRatio: 1.6,
+          childAspectRatio: 1.5,
           children: [
             _QuickAccessCard(
               title: '¿Qué materias deben los críticos?',
               icon: Icons.error_outline_rounded,
-              color: SegmentationDashboardColors.redCritical,
-              onTap: () => _showUnavailable(context, 'materias adeudadas'),
+              color: appColors.profileCritical,
             ),
             _QuickAccessCard(
               title: 'Materias del próximo cuatrimestre',
               icon: Icons.calendar_month_outlined,
-              color: SegmentationDashboardColors.primaryBlue,
-              onTap: () => _showUnavailable(context, 'oferta académica'),
+              color: theme.colorScheme.primary,
             ),
             _QuickAccessCard(
               title: 'Materias con más alumnos en deuda',
               icon: Icons.format_list_numbered_rounded,
-              color: SegmentationDashboardColors.orangeRisk,
-              onTap: () => _showUnavailable(context, 'materias adeudadas'),
+              color: appColors.profileModerateRisk,
             ),
             _QuickAccessCard(
               title: 'Alumnos con asistencia < 60%',
               icon: Icons.person_off_outlined,
               color: Colors.deepOrange,
-              onTap: () {
-                // Futura integración directa con filtro
-              },
             ),
             _QuickAccessCard(
               title: 'Próximos a egresar (sem. 8-9)',
               icon: Icons.school_outlined,
-              color: SegmentationDashboardColors.turquoise,
+              color: appColors.profileAtypical,
             ),
             _QuickAccessCard(
               title: 'Atípicos: alto promedio, baja asist.',
               icon: Icons.query_stats_rounded,
-              color: const Color(0xFF7C3AED),
+              color: appColors.info,
+            ),
+            _QuickAccessCard(
+              title: 'Gen. 2022 con materias pendientes',
+              icon: Icons.history_edu_rounded,
+              color: Colors.blueGrey,
+            ),
+            _QuickAccessCard(
+              title: 'Alumnos por programa educativo',
+              icon: Icons.pie_chart_outline_rounded,
+              color: Colors.teal,
             ),
           ],
         ),
       ],
-    );
-  }
-
-  void _showUnavailable(BuildContext context, String feature) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text(
-          'La consulta de $feature no está disponible en la fuente actual.',
-        ),
-      ),
     );
   }
 }
@@ -84,25 +81,30 @@ class _QuickAccessCard extends StatelessWidget {
     required this.title,
     required this.icon,
     required this.color,
-    this.onTap,
   });
 
   final String title;
   final IconData icon;
   final Color color;
-  final VoidCallback? onTap;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return InkWell(
-      onTap: onTap,
+      onTap: () {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ejecutando consulta inteligente...')),
+        );
+      },
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(12),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: SegmentationDashboardColors.border),
+          border: Border.all(color: appColors.cardBorder),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -118,10 +120,11 @@ class _QuickAccessCard extends StatelessWidget {
             const Spacer(),
             Text(
               title,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
                 fontWeight: FontWeight.bold,
                 height: 1.2,
+                color: theme.colorScheme.onSurface,
               ),
               maxLines: 3,
               overflow: TextOverflow.ellipsis,

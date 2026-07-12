@@ -190,26 +190,43 @@ class _RegisterPageState extends State<RegisterPage> {
   Future<void> _submit() async {
     setState(() => _localError = null);
 
-    if (_nameController.text.trim().isEmpty ||
-        _lastNameController.text.trim().isEmpty ||
-        _emailController.text.trim().isEmpty ||
-        _passwordController.text.isEmpty) {
+    final nombre = _nameController.text.trim();
+    final apellidos = _lastNameController.text.trim();
+    final email = _emailController.text.trim();
+    final password = _passwordController.text;
+    final confirmPassword = _confirmPasswordController.text;
+    final telefono = _phoneController.text.trim();
+
+    if (nombre.isEmpty ||
+        apellidos.isEmpty ||
+        email.isEmpty ||
+        password.isEmpty) {
       setState(() => _localError = 'Completa los campos obligatorios.');
       return;
     }
 
-    if (_passwordController.text != _confirmPasswordController.text) {
+    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+      setState(() => _localError = 'Formato de correo inválido.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setState(() => _localError = 'La contraseña debe tener al menos 6 caracteres.');
+      return;
+    }
+
+    if (password != confirmPassword) {
       setState(() => _localError = 'Las contraseñas no coinciden.');
       return;
     }
 
     final ok = await context.read<AuthProvider>().register(
-      email: _emailController.text,
-      password: _passwordController.text,
-      nombre: _nameController.text,
-      apellidos: _lastNameController.text,
+      email: email,
+      password: password,
+      nombre: nombre,
+      apellidos: apellidos,
       role: _role,
-      telefono: _phoneController.text,
+      telefono: telefono,
     );
 
     if (!mounted || !ok) return;

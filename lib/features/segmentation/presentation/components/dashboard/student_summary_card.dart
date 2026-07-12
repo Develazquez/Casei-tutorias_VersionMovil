@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class StudentSummaryCard extends StatelessWidget {
   const StudentSummaryCard({
@@ -7,7 +7,7 @@ class StudentSummaryCard extends StatelessWidget {
     required this.count,
     required this.description,
     required this.icon,
-    this.color = SegmentationDashboardColors.primaryBlue,
+    this.color,
     super.key,
   });
 
@@ -15,17 +15,21 @@ class StudentSummaryCard extends StatelessWidget {
   final int count;
   final String description;
   final IconData icon;
-  final Color color;
+  final Color? color;
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    final effectiveColor = color ?? theme.colorScheme.primary;
+
     return Expanded(
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: appColors.card,
           borderRadius: BorderRadius.circular(16),
-          border: Border.all(color: SegmentationDashboardColors.border),
+          border: Border.all(color: appColors.cardBorder),
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -36,17 +40,17 @@ class StudentSummaryCard extends StatelessWidget {
                 Container(
                   padding: const EdgeInsets.all(8),
                   decoration: BoxDecoration(
-                    color: color.withValues(alpha: 0.1),
+                    color: effectiveColor.withValues(alpha: 0.1),
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Icon(icon, color: color, size: 20),
+                  child: Icon(icon, color: effectiveColor, size: 20),
                 ),
                 Text(
                   '$count',
-                  style: const TextStyle(
+                  style: TextStyle(
                     fontSize: 22,
                     fontWeight: FontWeight.bold,
-                    color: SegmentationDashboardColors.textPrimary,
+                    color: theme.colorScheme.onSurface,
                   ),
                 ),
               ],
@@ -54,31 +58,31 @@ class StudentSummaryCard extends StatelessWidget {
             const SizedBox(height: 12),
             Text(
               label,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 14,
                 fontWeight: FontWeight.bold,
-                color: SegmentationDashboardColors.textPrimary,
+                color: theme.colorScheme.onSurface,
               ),
             ),
             Text(
               description,
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 11,
-                color: SegmentationDashboardColors.textSecondary,
+                color: appColors.mutedText,
               ),
             ),
             const SizedBox(height: 12),
             Container(
               height: 6,
               decoration: BoxDecoration(
-                color: SegmentationDashboardColors.border,
+                color: appColors.cardBorder,
                 borderRadius: BorderRadius.circular(3),
               ),
               child: FractionallySizedBox(
                 widthFactor: 1.0, // Simplificación: barra llena
                 child: Container(
                   decoration: BoxDecoration(
-                    color: color,
+                    color: effectiveColor,
                     borderRadius: BorderRadius.circular(3),
                   ),
                 ),

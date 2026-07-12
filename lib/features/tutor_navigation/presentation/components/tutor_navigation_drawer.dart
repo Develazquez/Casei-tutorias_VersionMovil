@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/theme/cacei_ui_colors.dart';
+import '../../../../core/theme/theme_casei_material3.dart';
 import '../../../../navigation/app_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../models/tutor_navigation_item.dart';
@@ -14,10 +14,12 @@ class TutorNavigationDrawer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final provider = context.watch<TutorNavigationProvider>();
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
 
     return NavigationDrawer(
-      backgroundColor: CaceiUiColors.cardSurface,
-      indicatorColor: CaceiUiColors.selectionBackground,
+      backgroundColor: theme.colorScheme.surface,
+      indicatorColor: theme.colorScheme.primaryContainer,
       selectedIndex: provider.selectedIndex,
       children: [
         const TutorDrawerHeader(),
@@ -29,15 +31,15 @@ class TutorNavigationDrawer extends StatelessWidget {
             child: ListTile(
               selected: isSelected,
               enabled: item.enabled || item.comingSoon,
-              selectedTileColor: CaceiUiColors.selectionBackground,
+              selectedTileColor: theme.colorScheme.primaryContainer,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
               ),
               leading: Icon(
                 isSelected ? item.selectedIconData : item.iconData,
                 color: item.enabled
-                    ? CaceiUiColors.primary
-                    : CaceiUiColors.secondaryText,
+                    ? (isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant)
+                    : appColors.mutedText,
               ),
               title: Text(
                 item.label + (item.comingSoon ? ' (Próx.)' : ''),
@@ -45,34 +47,32 @@ class TutorNavigationDrawer extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 13,
-                  fontFamily: 'Roboto',
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   color: item.enabled
                       ? (isSelected
-                            ? CaceiUiColors.primary
-                            : CaceiUiColors.titleText)
-                      : CaceiUiColors.secondaryText,
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface)
+                      : appColors.mutedText,
                 ),
               ),
               onTap: () => _selectDestination(context, provider, item),
             ),
           );
         }),
-        const Divider(indent: 28, endIndent: 28, color: CaceiUiColors.border),
+        Divider(indent: 28, endIndent: 28, color: theme.colorScheme.outlineVariant),
         const TutorDrawerProfile(),
-        const Divider(indent: 28, endIndent: 28, color: CaceiUiColors.border),
+        Divider(indent: 28, endIndent: 28, color: theme.colorScheme.outlineVariant),
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 0, 28, 16),
           child: ListTile(
             onTap: () => _showLogoutDialog(context),
-            leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-            title: const Text(
+            leading: Icon(Icons.logout_rounded, color: theme.colorScheme.error),
+            title: Text(
               'Cerrar sesión',
               style: TextStyle(
-                color: Colors.redAccent,
+                color: theme.colorScheme.error,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
               ),
             ),
             shape: RoundedRectangleBorder(
@@ -136,7 +136,7 @@ class TutorNavigationDrawer extends StatelessWidget {
                 (route) => false,
               );
             },
-            child: const Text('Confirmar', style: TextStyle(color: Colors.red)),
+            child: Text('Confirmar', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),

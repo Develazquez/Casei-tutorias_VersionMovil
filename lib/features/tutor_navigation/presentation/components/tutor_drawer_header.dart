@@ -1,14 +1,17 @@
 import 'package:flutter/material.dart';
 
-import '../../../../core/theme/cacei_ui_colors.dart';
+import '../../../../core/theme/theme_casei_material3.dart';
 
 class TutorDrawerHeader extends StatelessWidget {
   const TutorDrawerHeader({super.key});
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return DrawerHeader(
-      decoration: const BoxDecoration(color: CaceiUiColors.cardSurface),
+      decoration: BoxDecoration(color: theme.colorScheme.surface),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -19,35 +22,35 @@ class TutorDrawerHeader extends StatelessWidget {
               Container(
                 padding: const EdgeInsets.all(8),
                 decoration: BoxDecoration(
-                  color: CaceiUiColors.avatarBackground,
+                  color: theme.colorScheme.primaryContainer,
                   borderRadius: BorderRadius.circular(12),
                 ),
-                child: const Icon(
+                child: Icon(
                   Icons.account_balance_rounded,
-                  color: CaceiUiColors.primary,
+                  color: theme.colorScheme.primary,
                   size: 32,
                 ),
               ),
               const SizedBox(height: 12),
               Text(
                 'CACEI',
-                style: Theme.of(context).textTheme.titleLarge?.copyWith(
+                style: theme.textTheme.titleLarge?.copyWith(
                   fontWeight: FontWeight.bold,
-                  color: CaceiUiColors.primary,
+                  color: theme.colorScheme.primary,
                 ),
               ),
               Text(
                 'Tutor',
-                style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                  color: CaceiUiColors.secondaryText,
+                style: theme.textTheme.bodyMedium?.copyWith(
+                  color: appColors.mutedText,
                 ),
               ),
             ],
           ),
           IconButton(
-            icon: const Icon(
+            icon: Icon(
               Icons.close_rounded,
-              color: CaceiUiColors.secondaryText,
+              color: appColors.mutedText,
             ),
             tooltip: 'Cerrar menú de navegación',
             onPressed: () => Navigator.of(context).pop(),

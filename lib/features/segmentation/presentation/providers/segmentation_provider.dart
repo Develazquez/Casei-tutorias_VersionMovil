@@ -9,6 +9,8 @@ import '../../domain/usecases/get_dashboard_summary_usecase.dart';
 import '../../domain/usecases/get_segmentation_model_artifacts_usecase.dart';
 import '../../domain/usecases/get_segmentation_students_usecase.dart';
 
+import '../util/tutor_logic_utils.dart';
+
 class SegmentationProvider extends ChangeNotifier {
   SegmentationProvider(
     this._getSummaryUseCase,
@@ -24,7 +26,8 @@ class SegmentationProvider extends ChangeNotifier {
   String? _errorMessage;
   DashboardSummaryEntity? _summary;
   SegmentationModelArtifactsEntity? _modelArtifacts;
-  List<SegmentationStudentEntity> _students = [];
+  List<SegmentationStudentEntity> _rawStudents = [];
+  List<SegmentationStudentEntity> _tutorStudents = [];
   List<SegmentationStudentEntity> _visibleStudents = [];
   String _selectedProfile = 'Todos';
   String _selectedProgram = 'Todos';
@@ -35,6 +38,7 @@ class SegmentationProvider extends ChangeNotifier {
   DashboardSummaryEntity? get summary => _summary;
   SegmentationModelArtifactsEntity? get modelArtifacts => _modelArtifacts;
   List<SegmentationStudentEntity> get students => _visibleStudents;
+  List<SegmentationStudentEntity> get allTutorStudents => _tutorStudents;
   String get selectedProfile => _selectedProfile;
   String get selectedProgram => _selectedProgram;
   String get searchQuery => _searchQuery;
@@ -42,7 +46,10 @@ class SegmentationProvider extends ChangeNotifier {
 
   List<String> get profiles => [
     'Todos',
-    ...?_summary?.clusters.map((cluster) => cluster.label),
+    'Regular',
+    'Atípico',
+    'Crítico',
+    'Riesgo moderado',
   ];
 
   List<String> get programs => [
@@ -51,6 +58,7 @@ class SegmentationProvider extends ChangeNotifier {
     'Ingeniería en Energía',
     'Ingeniería Biomédica',
     'Ingeniería Agroindustrial',
+    'Ingeniería Mecatrónica',
   ];
 
   Future<void> load({String? role}) async {
@@ -61,64 +69,71 @@ class SegmentationProvider extends ChangeNotifier {
       _summary = await _getSummaryUseCase(
         role: role,
       ).timeout(const Duration(seconds: 8));
-      _students = await _getStudentsUseCase(
+      
+      _rawStudents = await _getStudentsUseCase(
         role: role,
-        profile: _selectedProfile,
-        program: _selectedProgram,
       ).timeout(const Duration(seconds: 8));
+
+      // Apply normalization (max 80)
+      _tutorStudents = TutorLogicUtils.normalizeTutorStudents(_rawStudents);
+      
       _modelArtifacts = await _getModelArtifactsUseCase().timeout(
         const Duration(seconds: 8),
       );
-      _visibleStudents = _applySearch(_students);
+      
+      _applyFiltersAndSearch();
       _state = ViewState.success;
     } on AppException catch (e) {
       _errorMessage = e.message;
       _state = ViewState.error;
     } catch (error) {
       _errorMessage =
-          'No fue posible cargar artefactos reales desde Supabase Storage. $error';
+          'No fue posible cargar datos reales. $error';
       _state = ViewState.error;
     }
     notifyListeners();
   }
 
-  Future<void> changeProfile(String profile, {String? role}) async {
+  void changeProfile(String profile) {
     _selectedProfile = profile;
-    await _reloadStudents(role: role);
+    _applyFiltersAndSearch();
+    notifyListeners();
   }
 
-  Future<void> changeProgram(String program, {String? role}) async {
+  void changeProgram(String program) {
     _selectedProgram = program;
-    await _reloadStudents(role: role);
+    _applyFiltersAndSearch();
+    notifyListeners();
   }
 
   void changeSearchQuery(String query) {
     _searchQuery = query;
-    _visibleStudents = _applySearch(_students);
+    _applyFiltersAndSearch();
     notifyListeners();
   }
 
   void clearSearch() {
-    if (_searchQuery.isEmpty) return;
     _searchQuery = '';
-    _visibleStudents = _students;
+    _selectedProfile = 'Todos';
+    _selectedProgram = 'Todos';
+    _applyFiltersAndSearch();
     notifyListeners();
   }
 
-  Future<void> _reloadStudents({String? role}) async {
-    try {
-      _students = await _getStudentsUseCase(
-        role: role,
-        profile: _selectedProfile,
-        program: _selectedProgram,
-      ).timeout(const Duration(seconds: 8));
-      _visibleStudents = _applySearch(_students);
-      notifyListeners();
-    } catch (error) {
-      _errorMessage =
-          'No fue posible actualizar filtros con artefactos reales de Storage. $error';
-      notifyListeners();
+  void _applyFiltersAndSearch() {
+    var filtered = _tutorStudents;
+
+    if (_selectedProfile != 'Todos') {
+      filtered = filtered.where((s) => 
+        TutorLogicUtils.normalizeProfileLabel(s.profileLabel) == _selectedProfile
+      ).toList();
     }
+
+    if (_selectedProgram != 'Todos') {
+      filtered = filtered.where((s) => s.program == _selectedProgram).toList();
+    }
+
+    _visibleStudents = _applySearch(filtered);
   }
 
   List<SegmentationStudentEntity> _applySearch(
