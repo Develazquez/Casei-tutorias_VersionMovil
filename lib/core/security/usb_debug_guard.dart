@@ -181,9 +181,9 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
 
   List<String> get _blockedReasons {
     final reasons = <String>[];
-    if (_adbEnabled) reasons.add('Depuración USB activada');
+    if (_adbEnabled) reasons.add('Depuración USB habilitada');
     if (_developerOptionsEnabled) {
-      reasons.add('Opciones de desarrollador activadas');
+      reasons.add('Opciones de desarrollador activas');
     }
     if (reasons.isEmpty) reasons.add('Entorno de ejecución no seguro');
     return reasons;

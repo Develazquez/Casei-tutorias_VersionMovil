@@ -231,7 +231,10 @@ class StudentAcademicDetailBottomSheet extends StatelessWidget {
                 ),
                 const SizedBox(height: 12),
                 if (student.delayedSubjects == 0)
-                  const Text('Sin materias adeudadas.')
+                  Text(
+                    'El alumno no cuenta con materias adeudadas actualmente.',
+                    style: TextStyle(color: appColors.mutedText, fontSize: 13),
+                  )
                 else ...[
                   _DebtItem(name: 'Matemáticas para Ingeniería', status: 'Reprobada'),
                   _DebtItem(name: 'Física I', status: 'No cursada'),

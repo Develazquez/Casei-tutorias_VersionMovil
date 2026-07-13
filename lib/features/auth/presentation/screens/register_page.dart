@@ -201,22 +201,22 @@ class _RegisterPageState extends State<RegisterPage> {
         apellidos.isEmpty ||
         email.isEmpty ||
         password.isEmpty) {
-      setState(() => _localError = 'Completa los campos obligatorios.');
+      setState(() => _localError = 'Por favor, completa todos los campos obligatorios para continuar.');
       return;
     }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      setState(() => _localError = 'Formato de correo inválido.');
+      setState(() => _localError = 'El formato del correo electrónico no es válido.');
       return;
     }
 
     if (password.length < 6) {
-      setState(() => _localError = 'La contraseña debe tener al menos 6 caracteres.');
+      setState(() => _localError = 'La contraseña debe tener al menos 6 caracteres por seguridad.');
       return;
     }
 
     if (password != confirmPassword) {
-      setState(() => _localError = 'Las contraseñas no coinciden.');
+      setState(() => _localError = 'Las contraseñas no coinciden. Por favor, verifícalas.');
       return;
     }
 

@@ -117,12 +117,12 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   final password = _passwordController.text;
 
                                   if (email.isEmpty || password.isEmpty) {
-                                    setState(() => _localError = 'Ingresa correo y contraseña.');
+                                    setState(() => _localError = 'Por favor, ingresa tu correo y contraseña institucional.');
                                     return;
                                   }
 
                                   if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-                                    setState(() => _localError = 'Formato de correo inválido.');
+                                    setState(() => _localError = 'El formato del correo electrónico no es válido.');
                                     return;
                                   }
 

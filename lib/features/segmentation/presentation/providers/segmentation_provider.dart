@@ -88,7 +88,7 @@ class SegmentationProvider extends ChangeNotifier {
       _state = ViewState.error;
     } catch (error) {
       _errorMessage =
-          'No fue posible cargar datos reales. $error';
+          'No hemos podido conectar con el sistema académico. Por favor, revisa tu conexión a internet o intenta más tarde.';
       _state = ViewState.error;
     }
     notifyListeners();

@@ -216,7 +216,18 @@ class _TutoradosViewState extends State<TutoradosView> {
   }
 
   Widget _buildStudentList(BuildContext context, List<SegmentationStudentEntity> students) {
-    if (students.isEmpty) return const Center(child: Text('No hay alumnos que coincidan.'));
+    if (students.isEmpty) {
+      return const Padding(
+        padding: EdgeInsets.symmetric(vertical: 40),
+        child: Center(
+          child: Text(
+            'No se encontraron alumnos que coincidan con los criterios de búsqueda.',
+            textAlign: TextAlign.center,
+            style: TextStyle(fontSize: 13),
+          ),
+        ),
+      );
+    }
     return Column(
       children: students.map((s) => _StudentListTile(student: s)).toList(),
     );

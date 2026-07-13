@@ -5,6 +5,7 @@ import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 import '../../../../core/errors/failures.dart';
 import '../../../../core/security/firebase_messaging_service.dart';
 import '../../../../core/storage/token_storage.dart';
+import '../../../../core/util/auth_error_mapper.dart';
 import '../models/user_dto.dart';
 
 class AuthSupabaseDataSource {
@@ -45,7 +46,7 @@ class AuthSupabaseDataSource {
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(AuthErrorMapper.map(e.message));
     } on supabase.PostgrestException catch (e) {
       throw ServerException(e.message);
     } on TimeoutException {
@@ -111,7 +112,7 @@ class AuthSupabaseDataSource {
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(AuthErrorMapper.map(e.message));
     } on supabase.PostgrestException catch (e) {
       throw ServerException(e.message);
     } on TimeoutException {

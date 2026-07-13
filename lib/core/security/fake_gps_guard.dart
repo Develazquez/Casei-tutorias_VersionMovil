@@ -56,9 +56,9 @@ class _FakeGpsGuardState extends State<FakeGpsGuard> {
         if (shouldBlock)
           _SecurityBlocker(
             icon: Icons.location_off,
-            title: 'Ubicación no confiable',
+            title: 'Seguridad de Ubicación',
             message:
-                'Se detectó una ubicación simulada. Desactiva Fake GPS y vuelve a abrir la app.',
+                'Se ha detectado el uso de una ubicación simulada. Por seguridad, deshabilita cualquier aplicación de "Fake GPS" y reinicia la aplicación.',
             color: theme.colorScheme.error,
           ),
       ],

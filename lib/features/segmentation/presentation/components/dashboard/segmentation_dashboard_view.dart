@@ -314,7 +314,7 @@ class _MockIndicator extends StatelessWidget {
           ),
           const SizedBox(width: 8),
           Text(
-            'Usando fuente de datos Mock (Falló conexión CSV)',
+            'Modo de demostración activo (Datos de ejemplo)',
             style: TextStyle(
               color: appColors.profileModerateRisk,
               fontSize: 10,

@@ -43,7 +43,7 @@ class SegmentationModelView extends StatelessWidget {
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Text(
-            'No hay artefactos de modelo disponibles en Supabase Storage.',
+            'Actualmente no hay información del modelo disponible. Es posible que el sistema se esté actualizando.',
             textAlign: TextAlign.center,
             style: TextStyle(color: appColors.mutedText),
           ),
