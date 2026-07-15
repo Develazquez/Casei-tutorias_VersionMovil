@@ -15,6 +15,10 @@ class AuthException extends AppException {
   const AuthException(super.message);
 }
 
+class EmailConfirmationRequiredException extends AuthException {
+  const EmailConfirmationRequiredException(super.message);
+}
+
 class ValidationException extends AppException {
   const ValidationException(super.message);
 }

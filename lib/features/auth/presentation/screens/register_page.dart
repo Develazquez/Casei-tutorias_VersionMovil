@@ -201,26 +201,38 @@ class _RegisterPageState extends State<RegisterPage> {
         apellidos.isEmpty ||
         email.isEmpty ||
         password.isEmpty) {
-      setState(() => _localError = 'Por favor, completa todos los campos obligatorios para continuar.');
+      setState(
+        () => _localError =
+            'Por favor, completa todos los campos obligatorios para continuar.',
+      );
       return;
     }
 
     if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-      setState(() => _localError = 'El formato del correo electrónico no es válido.');
+      setState(
+        () => _localError = 'El formato del correo electrónico no es válido.',
+      );
       return;
     }
 
     if (password.length < 6) {
-      setState(() => _localError = 'La contraseña debe tener al menos 6 caracteres por seguridad.');
+      setState(
+        () => _localError =
+            'La contraseña debe tener al menos 6 caracteres por seguridad.',
+      );
       return;
     }
 
     if (password != confirmPassword) {
-      setState(() => _localError = 'Las contraseñas no coinciden. Por favor, verifícalas.');
+      setState(
+        () => _localError =
+            'Las contraseñas no coinciden. Por favor, verifícalas.',
+      );
       return;
     }
 
-    final ok = await context.read<AuthProvider>().register(
+    final auth = context.read<AuthProvider>();
+    final ok = await auth.register(
       email: email,
       password: password,
       nombre: nombre,
@@ -230,6 +242,18 @@ class _RegisterPageState extends State<RegisterPage> {
     );
 
     if (!mounted || !ok) return;
+    if (auth.emailConfirmationPending) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            auth.statusMessage ??
+                'Revisa tu correo para confirmar el acceso y volver a la app.',
+          ),
+        ),
+      );
+      Navigator.pushReplacementNamed(context, AppScreen.login.route);
+      return;
+    }
     Navigator.pushReplacementNamed(context, AppScreen.segmentation.route);
   }
 }

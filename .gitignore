@@ -68,6 +68,10 @@ lib/generated_plugin_registrant.dart
 # Coverage
 coverage/
 
+# Local test scripts
+test_auth.ps1
+test_role_check.ps1
+
 # Symbols
 app.*.symbols
 app.*.map.json

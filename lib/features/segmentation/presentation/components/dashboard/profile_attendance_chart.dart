@@ -11,6 +11,10 @@ class ProfileAttendanceChart extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
+    final viewportWidth = MediaQuery.sizeOf(context).width - 64;
+    final chartWidth = viewportWidth > metrics.length * 70.0
+        ? viewportWidth
+        : metrics.length * 70.0;
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -35,7 +39,7 @@ class ProfileAttendanceChart extends StatelessWidget {
             scrollDirection: Axis.horizontal,
             child: SizedBox(
               height: 150,
-              width: (metrics.length * 70.0).clamp(MediaQuery.sizeOf(context).width - 64, 1000.0),
+              width: chartWidth,
               child: Row(
                 crossAxisAlignment: CrossAxisAlignment.end,
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -58,6 +62,7 @@ class _BarItem extends StatelessWidget {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
     final color = _getColor(appColors, metric.label);
+    final attendance = metric.averageAttendance.clamp(0.0, 100.0);
 
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
@@ -76,7 +81,7 @@ class _BarItem extends StatelessWidget {
         const SizedBox(height: 4),
         Container(
           width: 32,
-          height: (metric.averageAttendance / 100) * 110, // Escala relativa a 110px
+          height: (attendance / 100) * 110,
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.8),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),

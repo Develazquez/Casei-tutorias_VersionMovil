@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import 'core/security/security_shell.dart';
 import 'core/security/secure_storage_service.dart';
 import 'core/theme/theme_casei_material3.dart';
+import 'features/auth/presentation/components/auth_callback_coordinator.dart';
 import 'navigation/app_navigator.dart';
 import 'navigation/app_router.dart';
 
@@ -26,9 +27,11 @@ class CaseiTutoriasApp extends StatelessWidget {
       darkTheme: theme.dark(),
       themeMode: ThemeMode.system,
       builder: (context, child) {
-        return SecurityShell(
-          secureStorage: context.read<SecureStorageService>(),
-          child: child ?? const SizedBox.shrink(),
+        return AuthCallbackCoordinator(
+          child: SecurityShell(
+            secureStorage: context.read<SecureStorageService>(),
+            child: child ?? const SizedBox.shrink(),
+          ),
         );
       },
       initialRoute: AppRouter.initialRoute,

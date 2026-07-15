@@ -5,11 +5,14 @@ import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../features/auth/data/datasources/auth_supabase_data_source.dart';
 import '../../features/auth/data/repositories/auth_repository_impl.dart';
+import '../../features/auth/data/repositories/auth_state_repository_impl.dart';
 import '../../features/auth/domain/repositories/auth_repository.dart';
+import '../../features/auth/domain/repositories/auth_state_repository.dart';
 import '../../features/auth/domain/usecases/get_current_user_usecase.dart';
 import '../../features/auth/domain/usecases/login_usecase.dart';
 import '../../features/auth/domain/usecases/logout_usecase.dart';
 import '../../features/auth/domain/usecases/register_usecase.dart';
+import '../../features/auth/domain/usecases/watch_auth_state_usecase.dart';
 import '../../features/auth/presentation/providers/auth_provider.dart';
 import '../../features/security/data/repositories/secure_vault_repository_impl.dart';
 import '../../features/security/domain/repositories/secure_vault_repository.dart';
@@ -80,6 +83,10 @@ class AppProviders extends StatelessWidget {
           create: (context) =>
               AuthRepositoryImpl(context.read<AuthSupabaseDataSource>()),
         ),
+        Provider<AuthStateRepository>(
+          create: (context) =>
+              AuthStateRepositoryImpl(context.read<AuthSupabaseDataSource>()),
+        ),
         Provider<LoginUseCase>(
           create: (context) => LoginUseCase(context.read<AuthRepository>()),
         ),
@@ -93,12 +100,17 @@ class AppProviders extends StatelessWidget {
           create: (context) =>
               GetCurrentUserUseCase(context.read<AuthRepository>()),
         ),
+        Provider<WatchAuthStateUseCase>(
+          create: (context) =>
+              WatchAuthStateUseCase(context.read<AuthStateRepository>()),
+        ),
         ChangeNotifierProvider<AuthProvider>(
           create: (context) => AuthProvider(
             context.read<LoginUseCase>(),
             context.read<RegisterUseCase>(),
             context.read<LogoutUseCase>(),
             context.read<GetCurrentUserUseCase>(),
+            authStateChanges: context.read<WatchAuthStateUseCase>()(),
           ),
         ),
         Provider<SecureVaultRepository>(
