@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import '../../../../core/util/view_state.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
+import '../../domain/entities/tutor_status_entity.dart';
 import '../models/segmentation_dashboard_data.dart';
 import '../util/tutor_logic_utils.dart';
 import 'segmentation_provider.dart';
@@ -15,6 +16,7 @@ class SegmentationDashboardProvider extends ChangeNotifier {
   SegmentationDashboardData _data = SegmentationDashboardData.empty;
 
   SegmentationDashboardData get data => _data;
+  TutorStatusEntity? get tutorStatus => _sourceProvider.tutorStatus;
   bool get isLoading => _sourceProvider.state == ViewState.loading;
   String? get errorMessage => _sourceProvider.errorMessage;
 
@@ -31,21 +33,24 @@ class SegmentationDashboardProvider extends ChangeNotifier {
 
   void _processData() {
     final students = _sourceProvider.allTutorStudents;
-    if (students.isEmpty) {
+    final status = _sourceProvider.tutorStatus;
+    
+    if (status == null || status.state == TutorState.noGroup || status.state == TutorState.noData) {
       _data = SegmentationDashboardData.empty;
       return;
     }
 
     final total = students.length;
+    if (total == 0 && status.state != TutorState.modelReady) {
+      _data = SegmentationDashboardData.empty;
+      return;
+    }
 
     // Summary Metrics
-    final activeCount = students.where((s) => s.period.isNotEmpty).length;
-    final alumniCount = students.where((s) => s.period.isEmpty).length;
+    final activeCount = students.where((s) => s.academicStatus?.toLowerCase() != 'egresado').length;
+    final alumniCount = students.length - activeCount;
     
-    final urgentTracking = students.where((s) {
-      final profile = TutorLogicUtils.normalizeProfileLabel(s.profileLabel);
-      return profile == 'Crítico' || s.delayedSubjects > 0;
-    }).length;
+    final urgentTracking = students.where((s) => TutorLogicUtils.isUrgentTracking(s)).length;
 
     final generationsSet = students.map((s) => s.cohort).toSet();
 
@@ -102,7 +107,7 @@ class SegmentationDashboardProvider extends ChangeNotifier {
       priorityStudents: priorityList.take(6).toList(),
       totalStudents: total,
       generationMetrics: generationMetrics,
-      isMock: total == 9,
+      isMock: false, // Always false now as we use real data
     );
   }
 
@@ -112,20 +117,18 @@ class SegmentationDashboardProvider extends ChangeNotifier {
   }
 
   String _getProfileDescription(String label) {
-    return switch (label) {
-      'Regular' => 'Desempeño estable y asistencia constante.',
-      'Atípico' => 'Buen promedio pero con baja asistencia o viceversa.',
-      'Crítico' => 'Riesgo alto de reprobación o deserción.',
-      'Riesgo moderado' => 'Requiere atención para evitar rezago.',
-      _ => '',
-    };
+    if (label.contains('Regular')) return 'Desempeño estable y asistencia constante.';
+    if (label.contains('Atípico')) return 'Buen promedio pero con baja asistencia.';
+    if (label.contains('Crítico')) return 'Riesgo alto de reprobación o rezago.';
+    if (label.contains('Riesgo')) return 'Requiere atención para evitar rezago.';
+    return '';
   }
 
   int _labelPriority(String label) {
-    if (label == 'Crítico') return 4;
-    if (label == 'Riesgo moderado') return 3;
-    if (label == 'Atípico') return 2;
-    if (label == 'Regular') return 1;
+    if (label.contains('Crítico')) return 4;
+    if (label.contains('Riesgo')) return 3;
+    if (label.contains('Atípico')) return 2;
+    if (label.contains('Regular')) return 1;
     return 0;
   }
 }

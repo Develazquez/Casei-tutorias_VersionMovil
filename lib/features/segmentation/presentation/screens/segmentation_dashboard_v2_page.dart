@@ -28,8 +28,11 @@ class _SegmentationDashboardV2PageState
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      final role = context.read<AuthProvider>().user?.role;
-      context.read<SegmentationProvider>().load(role: role);
+      final auth = context.read<AuthProvider>();
+      context.read<SegmentationProvider>().load(
+        role: auth.user?.role,
+        userId: auth.user?.id,
+      );
     });
   }
 

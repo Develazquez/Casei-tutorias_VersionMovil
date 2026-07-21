@@ -332,13 +332,11 @@ class _StudentListTile extends StatelessWidget {
   }
 
   Color _getProfileColor(AppThemeColors colors, String profile) {
-    return switch (profile) {
-      'Regular' => colors.profileRegular,
-      'Atípico' => colors.profileAtypical,
-      'Crítico' => colors.profileCritical,
-      'Riesgo moderado' => colors.profileModerateRisk,
-      _ => colors.mutedText,
-    };
+    if (profile.contains('Regular')) return colors.profileRegular;
+    if (profile.contains('Atípico')) return colors.profileAtypical;
+    if (profile.contains('Crítico')) return colors.profileCritical;
+    if (profile.contains('Riesgo')) return colors.profileModerateRisk;
+    return colors.mutedText;
   }
 }
 

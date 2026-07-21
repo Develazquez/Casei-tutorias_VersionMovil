@@ -21,6 +21,8 @@ class _RegisterPageState extends State<RegisterPage> {
   final _lastNameController = TextEditingController();
   final _phoneController = TextEditingController();
 
+  bool _obscurePassword = true;
+  bool _obscureConfirmPassword = true;
   String _role = 'tutor';
   String? _localError;
 
@@ -139,14 +141,35 @@ class _RegisterPageState extends State<RegisterPage> {
                     controller: _passwordController,
                     label: 'Contraseña',
                     icon: Icons.lock_outline,
-                    obscureText: true,
+                    obscureText: _obscurePassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscurePassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() => _obscurePassword = !_obscurePassword);
+                      },
+                    ),
                   ),
                   const SizedBox(height: 12),
                   AuthTextField(
                     controller: _confirmPasswordController,
                     label: 'Confirmar contraseña',
                     icon: Icons.lock_reset,
-                    obscureText: true,
+                    obscureText: _obscureConfirmPassword,
+                    suffixIcon: IconButton(
+                      icon: Icon(
+                        _obscureConfirmPassword
+                            ? Icons.visibility_off_outlined
+                            : Icons.visibility_outlined,
+                      ),
+                      onPressed: () {
+                        setState(() => _obscureConfirmPassword =
+                            !_obscureConfirmPassword);
+                      },
+                    ),
                   ),
                   const SizedBox(height: 18),
                   FilledButton.icon(

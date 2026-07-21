@@ -1,16 +1,11 @@
 import '../../domain/entities/segmentation_student_entity.dart';
 
 abstract final class TutorLogicUtils {
-  /// Temporarily limits the number of students to 80 if backend returns too many.
+  /// Normalizes student data and applies business rules for priorities.
   static List<SegmentationStudentEntity> normalizeTutorStudents(
     List<SegmentationStudentEntity> students,
   ) {
-    if (students.length <= 80) {
-      return students;
-    }
-    // isolated fallback: if too many, take first 80.
-    // In a real scenario, this should be filtered by tutor_id in backend.
-    return students.take(80).toList();
+    return students;
   }
 
   /// Calculates a priority score to rank students who need more attention.
@@ -19,13 +14,13 @@ abstract final class TutorLogicUtils {
 
     // Academic Profile
     final profile = normalizeProfileLabel(student.profileLabel);
-    if (profile == 'Crítico') {
+    if (profile.contains('Crítico')) {
       score += 50;
     }
-    if (profile == 'Riesgo moderado') {
+    if (profile.contains('Riesgo')) {
       score += 30;
     }
-    if (profile == 'Atípico') {
+    if (profile.contains('Atípico')) {
       score += 10;
     }
 
@@ -34,9 +29,11 @@ abstract final class TutorLogicUtils {
 
     // Attendance
     if (student.attendanceRate < 60) {
-      score += 20;
-    } else if (student.attendanceRate < 80) {
-      score += 10;
+      score += 25;
+    } else if (student.attendanceRate < 70) {
+      score += 15;
+    } else if (student.attendanceRate < 75) {
+      score += 5;
     }
 
     // Grade
@@ -49,16 +46,34 @@ abstract final class TutorLogicUtils {
 
   static String normalizeProfileLabel(String label) {
     final l = label.toLowerCase();
-    if (l.contains('regular')) return 'Regular';
-    if (l.contains('atípico') || l.contains('atipico')) return 'Atípico';
-    if (l.contains('crítico') || l.contains('critico')) return 'Crítico';
-    if (l.contains('riesgo') || l.contains('moderado')) return 'Riesgo moderado';
+    if (l.contains('regular')) return 'Regular / seguimiento preventivo';
+    if (l.contains('atípico') || l.contains('atipico')) return 'Atípico / buen promedio con baja asistencia';
+    if (l.contains('crítico') || l.contains('critico')) return 'Crítico / rezago alto';
+    if (l.contains('riesgo') || l.contains('moderado')) return 'Riesgo académico moderado';
     return label;
+  }
+
+  static bool isUrgentTracking(SegmentationStudentEntity student) {
+    final profile = normalizeProfileLabel(student.profileLabel);
+    final isCriticalOrRisk = profile.contains('Crítico') || profile.contains('Riesgo');
+    final lowAttendance = student.attendanceRate < 75;
+    final manyDebts = student.delayedSubjects >= 3;
+
+    return isCriticalOrRisk && (lowAttendance || manyDebts);
+  }
+
+  static bool isLowAttendance(SegmentationStudentEntity student) {
+    return student.attendanceRate < 70;
+  }
+
+  static bool isHighTrajectoryRisk(SegmentationStudentEntity student) {
+    return student.attendanceRate < 60;
   }
 
   /// Fallback for gender estimation if backend doesn't provide it.
   static String getStudentGender(SegmentationStudentEntity student) {
-    // determinist fallback based on ID or Name
+    if (student.gender != null) return student.gender!;
+    
     if (student.name.trim().isEmpty) return 'Hombre';
     final namePart = student.name.trim().split(' ').first;
     final lastChar = namePart.toLowerCase()[namePart.length - 1];
@@ -68,6 +83,17 @@ abstract final class TutorLogicUtils {
     return 'Hombre';
   }
 
+  static List<String> getInitials(String name) {
+    final parts = name.trim().split(RegExp(r'\s+'));
+    if (parts.length >= 2) {
+      return [parts[0][0].toUpperCase(), parts[1][0].toUpperCase()];
+    }
+    if (parts.isNotEmpty && parts[0].isNotEmpty) {
+      return [parts[0][0].toUpperCase()];
+    }
+    return ['?'];
+  }
+
   /// Estimates term number based on cohort (fallback)
   static int getCurrentTermNumber(SegmentationStudentEntity student) {
     try {
@@ -75,7 +101,6 @@ abstract final class TutorLogicUtils {
       final currentYear = DateTime.now().year;
       final currentMonth = DateTime.now().month;
       
-      // UP Chiapas usually has 3 terms per year
       int diffYears = currentYear - cohortYear;
       int terms = diffYears * 3;
       
@@ -112,19 +137,7 @@ abstract final class TutorLogicUtils {
 
   static double getCurricularProgress(SegmentationStudentEntity student) {
     final term = getCurrentTermNumber(student);
-    // Rough estimation: 100% / 9 terms = ~11% per term
     final progress = (term / 9.0) * 100;
     return progress.clamp(0.0, 100.0);
-  }
-
-  static List<String> getInitials(String name) {
-    final parts = name.trim().split(RegExp(r'\s+'));
-    if (parts.length >= 2) {
-      return [parts[0][0].toUpperCase(), parts[1][0].toUpperCase()];
-    }
-    if (parts.isNotEmpty && parts[0].isNotEmpty) {
-      return [parts[0][0].toUpperCase()];
-    }
-    return ['?'];
   }
 }

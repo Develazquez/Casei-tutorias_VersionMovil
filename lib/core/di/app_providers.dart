@@ -20,12 +20,20 @@ import '../../features/security/domain/usecases/clear_secure_vault_usecase.dart'
 import '../../features/security/domain/usecases/read_secure_vault_usecase.dart';
 import '../../features/security/domain/usecases/save_secure_vault_usecase.dart';
 import '../../features/security/presentation/providers/secure_vault_provider.dart';
+import '../../features/segmentation/data/datasources/segmentation_remote_data_source.dart';
 import '../../features/segmentation/data/datasources/segmentation_supabase_storage_data_source.dart';
+import '../../features/segmentation/data/datasources/tutor_supabase_data_source.dart';
 import '../../features/segmentation/data/repositories/segmentation_repository_impl.dart';
+import '../../features/segmentation/data/repositories/tutor_dashboard_repository_impl.dart';
 import '../../features/segmentation/domain/repositories/segmentation_repository.dart';
+import '../../features/segmentation/domain/repositories/tutor_dashboard_repository.dart';
 import '../../features/segmentation/domain/usecases/get_dashboard_summary_usecase.dart';
 import '../../features/segmentation/domain/usecases/get_segmentation_model_artifacts_usecase.dart';
 import '../../features/segmentation/domain/usecases/get_segmentation_students_usecase.dart';
+import '../../features/segmentation/domain/usecases/get_tutor_status_usecase.dart';
+import '../../features/segmentation/domain/usecases/get_tutor_students_usecase.dart';
+import '../../features/segmentation/domain/usecases/get_tutor_summary_usecase.dart';
+import '../../features/segmentation/domain/usecases/search_tutor_students_usecase.dart';
 import '../../features/segmentation/presentation/providers/segmentation_dashboard_provider.dart';
 import '../../features/segmentation/presentation/providers/segmentation_model_provider.dart';
 import '../../features/segmentation/presentation/providers/segmentation_navigation_provider.dart';
@@ -146,6 +154,43 @@ class AppProviders extends StatelessWidget {
             context.read<SegmentationSupabaseStorageDataSource>(),
           ),
         ),
+        Provider<SegmentationRemoteDataSource>(
+          create: (context) => SegmentationRemoteDataSourceImpl(
+            context.read<http.Client>(),
+            context.read<TokenStorage>(),
+          ),
+        ),
+        Provider<TutorSupabaseDataSource>(
+          create: (context) => TutorSupabaseDataSource(
+            context.read<SupabaseClient>(),
+          ),
+        ),
+        Provider<TutorDashboardRepository>(
+          create: (context) => TutorDashboardRepositoryImpl(
+            context.read<SegmentationRemoteDataSource>(),
+            context.read<TutorSupabaseDataSource>(),
+          ),
+        ),
+        Provider<GetTutorStatusUseCase>(
+          create: (context) => GetTutorStatusUseCase(
+            context.read<TutorDashboardRepository>(),
+          ),
+        ),
+        Provider<GetTutorStudentsUseCase>(
+          create: (context) => GetTutorStudentsUseCase(
+            context.read<TutorDashboardRepository>(),
+          ),
+        ),
+        Provider<GetTutorSummaryUseCase>(
+          create: (context) => GetTutorSummaryUseCase(
+            context.read<TutorDashboardRepository>(),
+          ),
+        ),
+        Provider<SearchTutorStudentsUseCase>(
+          create: (context) => SearchTutorStudentsUseCase(
+            context.read<TutorDashboardRepository>(),
+          ),
+        ),
         Provider<GetDashboardSummaryUseCase>(
           create: (context) => GetDashboardSummaryUseCase(
             context.read<SegmentationRepository>(),
@@ -163,8 +208,10 @@ class AppProviders extends StatelessWidget {
         ),
         ChangeNotifierProvider<SegmentationProvider>(
           create: (context) => SegmentationProvider(
-            context.read<GetDashboardSummaryUseCase>(),
-            context.read<GetSegmentationStudentsUseCase>(),
+            context.read<GetTutorStatusUseCase>(),
+            context.read<GetTutorStudentsUseCase>(),
+            context.read<GetTutorSummaryUseCase>(),
+            context.read<SearchTutorStudentsUseCase>(),
             context.read<GetSegmentationModelArtifactsUseCase>(),
           ),
         ),
@@ -179,7 +226,10 @@ class AppProviders extends StatelessWidget {
         ),
         ChangeNotifierProvider<SegmentationSearchProvider>(
           create: (context) =>
-              SegmentationSearchProvider(context.read<SegmentationProvider>()),
+              SegmentationSearchProvider(
+                context.read<SegmentationProvider>(),
+                context.read<AuthProvider>(),
+              ),
         ),
         ChangeNotifierProvider<SegmentationNavigationProvider>(
           create: (_) => SegmentationNavigationProvider(),

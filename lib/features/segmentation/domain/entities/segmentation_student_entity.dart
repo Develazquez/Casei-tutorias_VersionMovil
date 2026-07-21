@@ -11,6 +11,11 @@ class SegmentationStudentEntity {
     required this.attendanceRate,
     required this.delayedSubjects,
     required this.membershipScore,
+    this.gender,
+    this.academicStatus,
+    this.semester,
+    this.graduationProjection,
+    this.email,
   });
 
   final String id;
@@ -24,4 +29,9 @@ class SegmentationStudentEntity {
   final double attendanceRate;
   final double delayedSubjects;
   final double membershipScore;
+  final String? gender;
+  final String? academicStatus;
+  final String? semester;
+  final String? graduationProjection;
+  final String? email;
 }

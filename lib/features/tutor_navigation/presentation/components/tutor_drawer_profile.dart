@@ -13,12 +13,11 @@ class TutorDrawerProfile extends StatelessWidget {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
 
-    // Datos mock si no hay usuario real (según instrucciones)
-    final String name = user?.name ?? 'Diego Velázquez Méndez'; // Mock
-    final String role = user?.role ?? 'Tutor'; // Mock
+    final String name = user?.name ?? 'CACEI User';
+    final String role = user?.role ?? 'Tutor';
 
     // Obtener iniciales
-    String initials = 'DV';
+    String initials = '??';
     if (user != null && user.name.isNotEmpty) {
       final parts = user.name.trim().split(' ');
       if (parts.length >= 2) {
@@ -26,6 +25,8 @@ class TutorDrawerProfile extends StatelessWidget {
       } else if (parts.isNotEmpty) {
         initials = parts[0][0].toUpperCase();
       }
+    } else if (name != 'CACEI User') {
+       initials = name.substring(0, 1).toUpperCase();
     }
 
     return Padding(

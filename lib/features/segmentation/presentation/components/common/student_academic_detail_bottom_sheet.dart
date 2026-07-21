@@ -78,7 +78,7 @@ class StudentAcademicDetailBottomSheet extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            '${student.id} · Gen. ${student.cohort} · Grupo 4A',
+                            '${student.id} · Gen. ${student.cohort} · ${student.period}',
                             style: theme.textTheme.bodyMedium?.copyWith(
                               color: appColors.mutedText,
                             ),
@@ -140,7 +140,7 @@ class StudentAcademicDetailBottomSheet extends StatelessWidget {
                     const SizedBox(width: 12),
                     _MetricCard(
                       label: 'Cuatrimestre',
-                      value: '$term°',
+                      value: student.semester ?? '$term°',
                       icon: Icons.calendar_today_rounded,
                       color: appColors.profileModerateRisk,
                     ),
@@ -262,13 +262,11 @@ class StudentAcademicDetailBottomSheet extends StatelessWidget {
   }
 
   Color _getProfileColor(AppThemeColors colors, String profile) {
-    return switch (profile) {
-      'Regular' => colors.profileRegular,
-      'Atípico' => colors.profileAtypical,
-      'Crítico' => colors.profileCritical,
-      'Riesgo moderado' => colors.profileModerateRisk,
-      _ => colors.mutedText,
-    };
+    if (profile.contains('Regular')) return colors.profileRegular;
+    if (profile.contains('Atípico')) return colors.profileAtypical;
+    if (profile.contains('Crítico')) return colors.profileCritical;
+    if (profile.contains('Riesgo')) return colors.profileModerateRisk;
+    return colors.mutedText;
   }
 
   Color _getProjectionColor(AppThemeColors colors, String projection) {

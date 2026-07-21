@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../auth/presentation/providers/auth_provider.dart';
+import '../../../domain/entities/tutor_status_entity.dart';
 import '../../models/segmentation_dashboard_data.dart';
 import '../../../../../core/theme/theme_casei_material3.dart';
 import '../../providers/segmentation_dashboard_provider.dart';
@@ -22,6 +24,7 @@ class SegmentationDashboardView extends StatelessWidget {
   Widget build(BuildContext context) {
     final viewModel = context.watch<SegmentationDashboardProvider>();
     final data = viewModel.data;
+    final status = viewModel.tutorStatus;
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
 
@@ -30,16 +33,40 @@ class SegmentationDashboardView extends StatelessWidget {
     }
 
     if (viewModel.errorMessage != null) {
-      return Center(child: Text(viewModel.errorMessage!));
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.error_outline_rounded,
+                  color: theme.colorScheme.error, size: 48),
+              const SizedBox(height: 16),
+              Text(
+                viewModel.errorMessage!,
+                textAlign: TextAlign.center,
+                style: theme.textTheme.bodyMedium,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton(
+                onPressed: () => _refresh(context),
+                child: const Text('Reintentar'),
+              )
+            ],
+          ),
+        ),
+      );
+    }
+
+    if (status != null && status.state != TutorState.modelReady) {
+      return _buildStatusView(context, status);
     }
 
     return RefreshIndicator(
-      onRefresh: () => context.read<SegmentationProvider>().load(),
+      onRefresh: () => _refresh(context),
       child: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          if (data.isMock) const _MockIndicator(),
-          
           Text(
             'Mis tutorados por perfil',
             style: theme.textTheme.headlineSmall?.copyWith(
@@ -64,7 +91,8 @@ class SegmentationDashboardView extends StatelessWidget {
             child: Row(
               mainAxisSize: MainAxisSize.min,
               children: [
-                Icon(Icons.auto_graph_rounded, size: 14, color: theme.colorScheme.primary),
+                Icon(Icons.auto_graph_rounded,
+                    size: 14, color: theme.colorScheme.primary),
                 const SizedBox(width: 6),
                 Text(
                   'K-Means K=3 · pca_90',
@@ -77,18 +105,19 @@ class SegmentationDashboardView extends StatelessWidget {
               ],
             ),
           ),
-          
+
           const SizedBox(height: 24),
-          
+
           // Top Summary Cards - Adaptable para diferentes anchos de pantalla
           _SummaryGrid(data: data),
-          
+
           const SizedBox(height: 24),
-          
+
           // Academic Profiles
           Text(
             'Perfiles Académicos',
-            style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+            style: theme.textTheme.titleMedium
+                ?.copyWith(fontWeight: FontWeight.bold),
           ),
           const SizedBox(height: 16),
           ...data.profileMetrics.map((metric) {
@@ -96,22 +125,23 @@ class SegmentationDashboardView extends StatelessWidget {
               padding: const EdgeInsets.only(bottom: 12),
               child: ProfileStatusCard(
                 metric: metric,
-                allStudents: context.read<SegmentationProvider>().allTutorStudents,
+                allStudents:
+                    context.read<SegmentationProvider>().allTutorStudents,
               ),
             );
           }),
 
           const SizedBox(height: 24),
-          
+
           ProfileDistributionChart(metrics: data.profileMetrics),
           const SizedBox(height: 12),
           GenerationGenderCard(metrics: data.generationMetrics),
-          
+
           const SizedBox(height: 24),
-          
+
           // Priority Students
           _PriorityStudentsSection(students: data.priorityStudents),
-          
+
           const SizedBox(height: 12),
           ProfileAttendanceChart(metrics: data.profileMetrics),
           const SizedBox(height: 12),
@@ -120,6 +150,57 @@ class SegmentationDashboardView extends StatelessWidget {
           const ModelQualityCard(),
           const SizedBox(height: 40),
         ],
+      ),
+    );
+  }
+
+  Future<void> _refresh(BuildContext context) {
+    final auth = context.read<AuthProvider>();
+    return context.read<SegmentationProvider>().load(
+          role: auth.user?.role,
+          userId: auth.user?.id,
+        );
+  }
+
+  Widget _buildStatusView(BuildContext context, TutorStatusEntity status) {
+    final theme = Theme.of(context);
+    final icon = switch (status.state) {
+      TutorState.noGroup => Icons.group_off_rounded,
+      TutorState.noData => Icons.person_off_rounded,
+      TutorState.hasStudents => Icons.analytics_outlined,
+      _ => Icons.info_outline_rounded,
+    };
+
+    return Center(
+      child: Padding(
+        padding: const EdgeInsets.all(32.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Icon(icon,
+                size: 64, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+            const SizedBox(height: 24),
+            Text(
+              status.displayMessage,
+              textAlign: TextAlign.center,
+              style: theme.textTheme.titleMedium
+                  ?.copyWith(fontWeight: FontWeight.bold),
+            ),
+            const SizedBox(height: 12),
+            if (status.state == TutorState.hasStudents)
+              const Text(
+                'Los datos de tus alumnos ya están en el sistema, pero el proceso de segmentación (K-Means) aún no se ha ejecutado o publicado para este periodo.',
+                textAlign: TextAlign.center,
+                style: TextStyle(fontSize: 12, color: Colors.grey),
+              ),
+            const SizedBox(height: 24),
+            OutlinedButton.icon(
+              onPressed: () => _refresh(context),
+              icon: const Icon(Icons.refresh_rounded),
+              label: const Text('Verificar de nuevo'),
+            )
+          ],
+        ),
       ),
     );
   }
@@ -133,36 +214,43 @@ class _SummaryGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
-    
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final double spacing = 12.0;
-        final double itemWidth = (constraints.maxWidth - spacing) / 2;
-        
-        return Column(
-          children: [
-            Row(
-              children: [
-                _buildItem(itemWidth, 'Activos', data.activeCount, 'Alumnos inscritos', Icons.person_search_rounded, theme.colorScheme.primary),
-                SizedBox(width: spacing),
-                _buildItem(itemWidth, 'Egresados', data.alumniCount, 'Carrera terminada', Icons.school_rounded, appColors.profileAtypical),
-              ],
-            ),
-            SizedBox(height: spacing),
-            Row(
-              children: [
-                _buildItem(itemWidth, 'Seguimiento', data.urgentTrackingCount, 'Atención urgente', Icons.warning_amber_rounded, appColors.profileCritical),
-                SizedBox(width: spacing),
-                _buildItem(itemWidth, 'Generaciones', data.generationCount, 'Cohortes activas', Icons.groups_2_rounded, appColors.profileModerateRisk),
-              ],
-            ),
-          ],
-        );
-      }
-    );
+
+    return LayoutBuilder(builder: (context, constraints) {
+      final double spacing = 12.0;
+      final double itemWidth = (constraints.maxWidth - spacing) / 2;
+
+      return Column(
+        children: [
+          Row(
+            children: [
+              _buildItem(itemWidth, 'Activos', data.activeCount,
+                  'Alumnos inscritos', Icons.person_search_rounded,
+                  theme.colorScheme.primary),
+              SizedBox(width: spacing),
+              _buildItem(itemWidth, 'Egresados', data.alumniCount,
+                  'Carrera terminada', Icons.school_rounded,
+                  appColors.profileAtypical),
+            ],
+          ),
+          SizedBox(height: spacing),
+          Row(
+            children: [
+              _buildItem(itemWidth, 'Seguimiento', data.urgentTrackingCount,
+                  'Atención urgente', Icons.warning_amber_rounded,
+                  appColors.profileCritical),
+              SizedBox(width: spacing),
+              _buildItem(itemWidth, 'Generaciones', data.generationCount,
+                  'Cohortes activas', Icons.groups_2_rounded,
+                  appColors.profileModerateRisk),
+            ],
+          ),
+        ],
+      );
+    });
   }
 
-  Widget _buildItem(double width, String label, int count, String desc, IconData icon, Color color) {
+  Widget _buildItem(double width, String label, int count, String desc,
+      IconData icon, Color color) {
     return SizedBox(
       width: width,
       child: StudentSummaryCard(
@@ -200,16 +288,20 @@ class _PriorityStudentsSection extends StatelessWidget {
             children: [
               Text(
                 'Alumnos prioritarios',
-                style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium
+                    ?.copyWith(fontWeight: FontWeight.bold),
               ),
-              const Icon(Icons.priority_high_rounded, color: Colors.orange, size: 20),
+              const Icon(Icons.priority_high_rounded,
+                  color: Colors.orange, size: 20),
             ],
           ),
           const SizedBox(height: 16),
           if (students.isEmpty)
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
-              child: Center(child: Text('No hay alumnos prioritarios.', style: TextStyle(fontSize: 12))),
+              child: Center(
+                  child:
+                      Text('No hay alumnos prioritarios.', style: TextStyle(fontSize: 12))),
             )
           else
             ...students.map((s) => _PriorityStudentTile(student: s)),
@@ -240,7 +332,10 @@ class _PriorityStudentTile extends StatelessWidget {
               backgroundColor: theme.colorScheme.primaryContainer,
               child: Text(
                 initials,
-                style: TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: theme.colorScheme.primary),
+                style: TextStyle(
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold,
+                    color: theme.colorScheme.primary),
               ),
             ),
             const SizedBox(width: 12),
@@ -250,7 +345,8 @@ class _PriorityStudentTile extends StatelessWidget {
                 children: [
                   Text(
                     student.name,
-                    style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style:
+                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -269,59 +365,24 @@ class _PriorityStudentTile extends StatelessWidget {
               children: [
                 Text(
                   '${student.averageGrade.toStringAsFixed(1)}',
-                  style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  style:
+                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
                 ),
                 if (student.delayedSubjects > 0)
                   Text(
                     '${student.delayedSubjects.round()} deudas',
-                    style: TextStyle(fontSize: 9, color: appColors.profileCritical, fontWeight: FontWeight.bold),
+                    style: TextStyle(
+                        fontSize: 9,
+                        color: appColors.profileCritical,
+                        fontWeight: FontWeight.bold),
                   ),
               ],
             ),
             const SizedBox(width: 8),
-            Icon(Icons.chevron_right_rounded, size: 16, color: appColors.cardBorder),
+            Icon(Icons.chevron_right_rounded,
+                size: 16, color: appColors.cardBorder),
           ],
         ),
-      ),
-    );
-  }
-}
-
-class _MockIndicator extends StatelessWidget {
-  const _MockIndicator();
-
-  @override
-  Widget build(BuildContext context) {
-    final theme = Theme.of(context);
-    final appColors = theme.extension<AppThemeColors>()!;
-
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-      decoration: BoxDecoration(
-        color: appColors.profileModerateRisk.withValues(alpha: 0.1),
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(
-          color: appColors.profileModerateRisk.withValues(alpha: 0.3),
-        ),
-      ),
-      child: Row(
-        children: [
-          Icon(
-            Icons.info_outline,
-            color: appColors.profileModerateRisk,
-            size: 16,
-          ),
-          const SizedBox(width: 8),
-          Text(
-            'Modo de demostración activo (Datos de ejemplo)',
-            style: TextStyle(
-              color: appColors.profileModerateRisk,
-              fontSize: 10,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-        ],
       ),
     );
   }

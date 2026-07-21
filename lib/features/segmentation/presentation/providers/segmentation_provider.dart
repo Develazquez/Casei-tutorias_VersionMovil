@@ -5,36 +5,46 @@ import '../../../../core/util/view_state.dart';
 import '../../domain/entities/dashboard_summary_entity.dart';
 import '../../domain/entities/segmentation_model_artifacts_entity.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
-import '../../domain/usecases/get_dashboard_summary_usecase.dart';
+import '../../domain/entities/tutor_status_entity.dart';
 import '../../domain/usecases/get_segmentation_model_artifacts_usecase.dart';
-import '../../domain/usecases/get_segmentation_students_usecase.dart';
+import '../../domain/usecases/get_tutor_status_usecase.dart';
+import '../../domain/usecases/get_tutor_students_usecase.dart';
+import '../../domain/usecases/get_tutor_summary_usecase.dart';
+import '../../domain/usecases/search_tutor_students_usecase.dart';
 
 import '../util/tutor_logic_utils.dart';
 
 class SegmentationProvider extends ChangeNotifier {
   SegmentationProvider(
-    this._getSummaryUseCase,
+    this._getStatusUseCase,
     this._getStudentsUseCase,
+    this._getSummaryUseCase,
+    this._searchUseCase,
     this._getModelArtifactsUseCase,
   );
 
-  final GetDashboardSummaryUseCase _getSummaryUseCase;
-  final GetSegmentationStudentsUseCase _getStudentsUseCase;
+  final GetTutorStatusUseCase _getStatusUseCase;
+  final GetTutorStudentsUseCase _getStudentsUseCase;
+  final GetTutorSummaryUseCase _getSummaryUseCase;
+  final SearchTutorStudentsUseCase _searchUseCase;
   final GetSegmentationModelArtifactsUseCase _getModelArtifactsUseCase;
 
   ViewState _state = ViewState.idle;
   String? _errorMessage;
+  TutorStatusEntity? _tutorStatus;
   DashboardSummaryEntity? _summary;
   SegmentationModelArtifactsEntity? _modelArtifacts;
-  List<SegmentationStudentEntity> _rawStudents = [];
   List<SegmentationStudentEntity> _tutorStudents = [];
   List<SegmentationStudentEntity> _visibleStudents = [];
+  
   String _selectedProfile = 'Todos';
   String _selectedProgram = 'Todos';
   String _searchQuery = '';
+  bool _isRealSearch = false;
 
   ViewState get state => _state;
   String? get errorMessage => _errorMessage;
+  TutorStatusEntity? get tutorStatus => _tutorStatus;
   DashboardSummaryEntity? get summary => _summary;
   SegmentationModelArtifactsEntity? get modelArtifacts => _modelArtifacts;
   List<SegmentationStudentEntity> get students => _visibleStudents;
@@ -46,40 +56,51 @@ class SegmentationProvider extends ChangeNotifier {
 
   List<String> get profiles => [
     'Todos',
-    'Regular',
-    'Atípico',
-    'Crítico',
-    'Riesgo moderado',
+    'Regular / seguimiento preventivo',
+    'Atípico / buen promedio con baja asistencia',
+    'Crítico / rezago alto',
+    'Riesgo académico moderado',
   ];
 
-  List<String> get programs => [
-    'Todos',
-    'Ingeniería en Desarrollo de Software',
-    'Ingeniería en Energía',
-    'Ingeniería Biomédica',
-    'Ingeniería Agroindustrial',
-    'Ingeniería Mecatrónica',
-  ];
+  List<String> get programs {
+    final set = _tutorStudents.map((s) => s.program).toSet();
+    return ['Todos', ...set.toList()..sort()];
+  }
 
-  Future<void> load({String? role}) async {
+  Future<void> load({String? role, String? userId}) async {
+    if (userId == null) {
+      _errorMessage = 'No se pudo identificar al usuario.';
+      _state = ViewState.error;
+      notifyListeners();
+      return;
+    }
+
     _state = ViewState.loading;
     _errorMessage = null;
     notifyListeners();
+    
     try {
-      _summary = await _getSummaryUseCase(
-        role: role,
-      ).timeout(const Duration(seconds: 8));
-      
-      _rawStudents = await _getStudentsUseCase(
-        role: role,
-      ).timeout(const Duration(seconds: 8));
+      // 1. Check Tutor Status
+      _tutorStatus = await _getStatusUseCase(userId).timeout(const Duration(seconds: 10));
 
-      // Apply normalization (max 80)
-      _tutorStudents = TutorLogicUtils.normalizeTutorStudents(_rawStudents);
+      if (_tutorStatus?.state == TutorState.noGroup || _tutorStatus?.state == TutorState.noData) {
+        _state = ViewState.success;
+        notifyListeners();
+        return;
+      }
+
+      // 2. Fetch Summary
+      _summary = await _getSummaryUseCase(userId).timeout(const Duration(seconds: 10));
       
-      _modelArtifacts = await _getModelArtifactsUseCase().timeout(
-        const Duration(seconds: 8),
-      );
+      // 3. Fetch Students
+      _tutorStudents = await _getStudentsUseCase(userId).timeout(const Duration(seconds: 15));
+
+      // 4. Fetch Model Artifacts (Optional)
+      try {
+        _modelArtifacts = await _getModelArtifactsUseCase().timeout(const Duration(seconds: 10));
+      } catch (_) {
+        // Artifacts are optional for the dashboard to work
+      }
       
       _applyFiltersAndSearch();
       _state = ViewState.success;
@@ -87,9 +108,40 @@ class SegmentationProvider extends ChangeNotifier {
       _errorMessage = e.message;
       _state = ViewState.error;
     } catch (error) {
-      _errorMessage =
-          'No hemos podido conectar con el sistema académico. Por favor, revisa tu conexión a internet o intenta más tarde.';
+      _errorMessage = 'Error de conexión con el servidor CASEI. Reintente más tarde.';
       _state = ViewState.error;
+    }
+    notifyListeners();
+  }
+
+  void changeSearchQuery(String query) {
+    _searchQuery = query;
+    _applyFiltersAndSearch();
+    notifyListeners();
+  }
+
+  Future<void> search(String query, String userId) async {
+    _searchQuery = query;
+    if (query.trim().isEmpty) {
+      _isRealSearch = false;
+      _applyFiltersAndSearch();
+      notifyListeners();
+      return;
+    }
+
+    _state = ViewState.loading;
+    notifyListeners();
+
+    try {
+      final results = await _searchUseCase(userId, query);
+      _visibleStudents = results;
+      _isRealSearch = true;
+      _state = ViewState.success;
+    } catch (_) {
+      // Fallback to local search if remote fails
+      _isRealSearch = false;
+      _applyFiltersAndSearch();
+      _state = ViewState.success;
     }
     notifyListeners();
   }
@@ -106,21 +158,18 @@ class SegmentationProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  void changeSearchQuery(String query) {
-    _searchQuery = query;
-    _applyFiltersAndSearch();
-    notifyListeners();
-  }
-
   void clearSearch() {
     _searchQuery = '';
     _selectedProfile = 'Todos';
     _selectedProgram = 'Todos';
+    _isRealSearch = false;
     _applyFiltersAndSearch();
     notifyListeners();
   }
 
   void _applyFiltersAndSearch() {
+    if (_isRealSearch) return;
+
     var filtered = _tutorStudents;
 
     if (_selectedProfile != 'Todos') {
@@ -133,10 +182,10 @@ class SegmentationProvider extends ChangeNotifier {
       filtered = filtered.where((s) => s.program == _selectedProgram).toList();
     }
 
-    _visibleStudents = _applySearch(filtered);
+    _visibleStudents = _applyLocalSearch(filtered);
   }
 
-  List<SegmentationStudentEntity> _applySearch(
+  List<SegmentationStudentEntity> _applyLocalSearch(
     List<SegmentationStudentEntity> source,
   ) {
     final terms = _normalize(
@@ -157,14 +206,9 @@ class SegmentationProvider extends ChangeNotifier {
   }
 
   int _scoreStudent(SegmentationStudentEntity student, List<String> terms) {
-    final normalizedProgram = _normalize(student.program);
-    final normalizedProfile = _normalize(student.profileLabel);
     final document = _searchDocument(student);
-
     var score = 0;
     for (final term in terms) {
-      if (normalizedProgram.contains(term)) score += 5;
-      if (normalizedProfile.contains(term)) score += 4;
       if (document.contains(term)) score += 2;
     }
     if (terms.every(document.contains)) score += 4;
@@ -180,18 +224,10 @@ class SegmentationProvider extends ChangeNotifier {
         student.cohort,
         student.period,
         student.profileLabel,
-        'cluster ${student.cluster}',
-        if (student.program.contains('Biomédica')) 'biomedica biomedical',
-        if (student.program.contains('Software')) 'software desarrollo',
-        if (student.program.contains('Energía')) 'energia',
-        if (student.program.contains('Agroindustrial')) 'agroindustrial',
-        if (student.averageGrade < 60)
-          'critico criticos promedio bajo reprobacion',
-        if (student.averageGrade >= 85) 'buen promedio alto desempeno',
-        if (student.attendanceRate < 60)
-          'baja asistencia ausentismo asistencias',
-        if (student.delayedSubjects >= 3)
-          'rezago rezagos alto atraso academico',
+        student.academicStatus ?? '',
+        if (student.averageGrade < 70) 'critico promedio bajo',
+        if (student.attendanceRate < 70) 'baja asistencia',
+        if (student.delayedSubjects >= 3) 'rezago',
       ].join(' '),
     );
   }
@@ -211,7 +247,6 @@ class SegmentationProvider extends ChangeNotifier {
 
 class _SearchMatch {
   const _SearchMatch(this.student, this.score);
-
   final SegmentationStudentEntity student;
   final int score;
 }

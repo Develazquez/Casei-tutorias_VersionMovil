@@ -2,7 +2,15 @@ class AppConstants {
   const AppConstants._();
 
   static const String appName = 'CACEI Tutorías';
-  static const String apiBaseUrl = 'http://localhost:8000/api/v1';
+  
+  static const String _envApiBaseUrl = String.fromEnvironment(
+    'ACADEMIC_SEGMENTATION_API_URL',
+    defaultValue: 'http://127.0.0.1:8000',
+  );
+  
+  static const String apiBaseUrl = '$_envApiBaseUrl/api/v1';
+
+  static const String segmentationApiUrl = '$apiBaseUrl/cacei/segmentation';
 
   static const String _expoSupabaseUrl = String.fromEnvironment(
     'EXPO_PUBLIC_SUPABASE_URL',
@@ -35,7 +43,7 @@ class AppConstants {
   );
   static const bool enableFakeGpsGuard = bool.fromEnvironment(
     'ENABLE_FAKE_GPS_GUARD',
-    defaultValue: true,
+    defaultValue: false,
   );
   static const bool enableInactivitySessionTimeout = bool.fromEnvironment(
     'ENABLE_INACTIVITY_SESSION_TIMEOUT',

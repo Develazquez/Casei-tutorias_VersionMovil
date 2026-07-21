@@ -40,7 +40,7 @@ class SearchResultsSection extends StatelessWidget {
             padding: const EdgeInsets.symmetric(vertical: 40),
             child: Center(
               child: Text(
-                'No encontramos resultados con estos criterios.',
+                'No se encontraron resultados',
                 style: TextStyle(
                   color: appColors.mutedText,
                   fontSize: 13,

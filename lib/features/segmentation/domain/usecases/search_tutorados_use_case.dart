@@ -2,7 +2,7 @@ import '../entities/segmentation_student_entity.dart';
 import '../models/tutor_search_models.dart';
 
 class SearchTutoradosUseCase {
-  static const double lowAttendanceThreshold = 60.0;
+  static const double lowAttendanceThreshold = 70.0;
 
   TutorSearchResult call(
     List<SegmentationStudentEntity> students,
@@ -31,8 +31,10 @@ class SearchTutoradosUseCase {
         if (student.attendanceRate >= lowAttendanceThreshold) return false;
       }
 
-      // 4. Filtro por egresados (AND) - Nota: No disponible en entidad real actual
-      if (query.alumniOnly) return false;
+      // 4. Filtro por egresados (AND)
+      if (query.alumniOnly) {
+        if (student.academicStatus?.toLowerCase() != 'egresado') return false;
+      }
 
       // 5. Búsqueda por texto (AND)
       if (query.text.isNotEmpty) {
@@ -47,6 +49,8 @@ class SearchTutoradosUseCase {
             student.id,
             student.program,
             student.profileLabel,
+            student.academicStatus ?? '',
+            student.email ?? '',
           ].join(' '),
         );
 
@@ -80,10 +84,11 @@ class SearchTutoradosUseCase {
   }
 
   int _getProfileWeight(String label) {
-    if (label.contains('Crítico')) return 4;
-    if (label.contains('Riesgo')) return 3;
-    if (label.contains('Atípico')) return 2;
-    if (label.contains('Regular')) return 1;
+    final l = label.toLowerCase();
+    if (l.contains('crítico') || l.contains('critico')) return 4;
+    if (l.contains('riesgo')) return 3;
+    if (l.contains('atípico') || l.contains('atipico')) return 2;
+    if (l.contains('regular')) return 1;
     return 0;
   }
 }

@@ -1,17 +1,19 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../domain/entities/segmentation_student_entity.dart';
 import '../../domain/models/tutor_search_models.dart';
 import '../../domain/usecases/search_tutorados_use_case.dart';
 import 'segmentation_provider.dart';
 
 class SegmentationSearchProvider extends ChangeNotifier {
-  SegmentationSearchProvider(this._sourceProvider) {
+  SegmentationSearchProvider(this._sourceProvider, this._authProvider) {
     _sourceProvider.addListener(_onSourceChanged);
     _processSearch();
   }
 
   final SegmentationProvider _sourceProvider;
+  final AuthProvider _authProvider;
   final _searchUseCase = SearchTutoradosUseCase();
 
   TutorSearchQuery _query = const TutorSearchQuery();
@@ -20,11 +22,13 @@ class SegmentationSearchProvider extends ChangeNotifier {
     totalCount: 0,
   );
   Timer? _debounce;
+  bool _isRemoteSearching = false;
 
   TutorSearchQuery get query => _query;
   List<SegmentationStudentEntity> get results => _result.students;
   int get totalResults => _result.totalCount;
   bool get isSearching => !_query.isEmpty;
+  bool get isRemoteSearching => _isRemoteSearching;
 
   @override
   void dispose() {
@@ -34,17 +38,41 @@ class SegmentationSearchProvider extends ChangeNotifier {
   }
 
   void _onSourceChanged() {
-    _processSearch();
-    notifyListeners();
+    if (!_isRemoteSearching) {
+      _processSearch();
+      notifyListeners();
+    }
   }
 
   void onTextChanged(String text) {
     if (_debounce?.isActive ?? false) _debounce!.cancel();
-    _debounce = Timer(const Duration(milliseconds: 300), () {
+    _debounce = Timer(const Duration(milliseconds: 500), () async {
       _query = _query.copyWith(text: text.trim());
-      _processSearch();
+      
+      if (_query.text.length > 2) {
+        await _performRemoteSearch(_query.text);
+      } else {
+        _processSearch();
+      }
       notifyListeners();
     });
+  }
+
+  Future<void> _performRemoteSearch(String text) async {
+    _isRemoteSearching = true;
+    notifyListeners();
+    
+    final userId = _authProvider.user?.id;
+    if (userId != null) {
+      await _sourceProvider.search(text, userId);
+      _result = TutorSearchResult(
+        students: _sourceProvider.students,
+        totalCount: _sourceProvider.students.length,
+      );
+    }
+    
+    _isRemoteSearching = false;
+    notifyListeners();
   }
 
   void toggleProfile(String profile) {
@@ -79,17 +107,17 @@ class SegmentationSearchProvider extends ChangeNotifier {
 
   void clearFilters() {
     _query = const TutorSearchQuery();
+    _sourceProvider.clearSearch();
     _processSearch();
     notifyListeners();
   }
 
   void _processSearch() {
-    _result = _searchUseCase(_sourceProvider.students, _query);
+    _result = _searchUseCase(_sourceProvider.allTutorStudents, _query);
   }
 
-  // Contadores para los chips de filtro
   int getCountByProfile(String profile) {
-    return _sourceProvider.students
+    return _sourceProvider.allTutorStudents
         .where(
           (s) => s.profileLabel.toLowerCase().contains(profile.toLowerCase()),
         )
@@ -97,14 +125,13 @@ class SegmentationSearchProvider extends ChangeNotifier {
   }
 
   int getCountByGeneration(String gen) {
-    return _sourceProvider.students.where((s) => s.cohort == gen).length;
+    return _sourceProvider.allTutorStudents.where((s) => s.cohort == gen).length;
   }
 
   int getLowAttendanceCount() {
-    return _sourceProvider.students
+    return _sourceProvider.allTutorStudents
         .where(
-          (s) =>
-              s.attendanceRate < SearchTutoradosUseCase.lowAttendanceThreshold,
+          (s) => s.attendanceRate < 70,
         )
         .length;
   }
