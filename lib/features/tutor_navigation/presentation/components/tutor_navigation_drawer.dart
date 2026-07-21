@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import '../../../../core/theme/cacei_ui_colors.dart';
+import '../../../../core/theme/theme_casei_material3.dart';
 import '../../../../navigation/app_screen.dart';
-import '../../../auth/presentation/viewmodels/auth_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../models/tutor_navigation_item.dart';
-import '../viewmodels/tutor_navigation_view_model.dart';
+import '../providers/tutor_navigation_provider.dart';
 import 'tutor_drawer_header.dart';
 import 'tutor_drawer_profile.dart';
 
@@ -13,31 +13,33 @@ class TutorNavigationDrawer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final viewModel = context.watch<TutorNavigationViewModel>();
+    final provider = context.watch<TutorNavigationProvider>();
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
 
     return NavigationDrawer(
-      backgroundColor: CaceiUiColors.cardSurface,
-      indicatorColor: CaceiUiColors.selectionBackground,
-      selectedIndex: viewModel.selectedIndex,
+      backgroundColor: theme.colorScheme.surface,
+      indicatorColor: theme.colorScheme.primaryContainer,
+      selectedIndex: provider.selectedIndex,
       children: [
         const TutorDrawerHeader(),
-        ...viewModel.items.map((item) {
+        ...provider.items.map((item) {
           final isSelected =
-              viewModel.selectedIndex == viewModel.items.indexOf(item);
+              provider.selectedIndex == provider.items.indexOf(item);
           return Padding(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 2),
             child: ListTile(
               selected: isSelected,
               enabled: item.enabled || item.comingSoon,
-              selectedTileColor: CaceiUiColors.selectionBackground,
+              selectedTileColor: theme.colorScheme.primaryContainer,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(28),
               ),
               leading: Icon(
                 isSelected ? item.selectedIconData : item.iconData,
                 color: item.enabled
-                    ? CaceiUiColors.primary
-                    : CaceiUiColors.secondaryText,
+                    ? (isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant)
+                    : appColors.mutedText,
               ),
               title: Text(
                 item.label + (item.comingSoon ? ' (Próx.)' : ''),
@@ -45,34 +47,32 @@ class TutorNavigationDrawer extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: TextStyle(
                   fontSize: 13,
-                  fontFamily: 'Roboto',
                   fontWeight: isSelected ? FontWeight.w600 : FontWeight.normal,
                   color: item.enabled
                       ? (isSelected
-                            ? CaceiUiColors.primary
-                            : CaceiUiColors.titleText)
-                      : CaceiUiColors.secondaryText,
+                            ? theme.colorScheme.primary
+                            : theme.colorScheme.onSurface)
+                      : appColors.mutedText,
                 ),
               ),
-              onTap: () => _selectDestination(context, viewModel, item),
+              onTap: () => _selectDestination(context, provider, item),
             ),
           );
         }),
-        const Divider(indent: 28, endIndent: 28, color: CaceiUiColors.border),
+        Divider(indent: 28, endIndent: 28, color: theme.colorScheme.outlineVariant),
         const TutorDrawerProfile(),
-        const Divider(indent: 28, endIndent: 28, color: CaceiUiColors.border),
+        Divider(indent: 28, endIndent: 28, color: theme.colorScheme.outlineVariant),
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 0, 28, 16),
           child: ListTile(
             onTap: () => _showLogoutDialog(context),
-            leading: const Icon(Icons.logout_rounded, color: Colors.redAccent),
-            title: const Text(
+            leading: Icon(Icons.logout_rounded, color: theme.colorScheme.error),
+            title: Text(
               'Cerrar sesión',
               style: TextStyle(
-                color: Colors.redAccent,
+                color: theme.colorScheme.error,
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                fontFamily: 'Roboto',
               ),
             ),
             shape: RoundedRectangleBorder(
@@ -86,7 +86,7 @@ class TutorNavigationDrawer extends StatelessWidget {
 
   void _selectDestination(
     BuildContext context,
-    TutorNavigationViewModel viewModel,
+    TutorNavigationProvider provider,
     TutorNavigationItem item,
   ) {
     if (!item.enabled) {
@@ -103,8 +103,8 @@ class TutorNavigationDrawer extends StatelessWidget {
       return;
     }
 
-    final index = viewModel.items.indexOf(item);
-    viewModel.setSelectedIndex(index);
+    final index = provider.items.indexOf(item);
+    provider.setSelectedIndex(index);
 
     if (item.route != null) {
       Navigator.of(context).pop();
@@ -136,7 +136,7 @@ class TutorNavigationDrawer extends StatelessWidget {
                 (route) => false,
               );
             },
-            child: const Text('Confirmar', style: TextStyle(color: Colors.red)),
+            child: Text('Confirmar', style: TextStyle(color: Theme.of(context).colorScheme.error)),
           ),
         ],
       ),

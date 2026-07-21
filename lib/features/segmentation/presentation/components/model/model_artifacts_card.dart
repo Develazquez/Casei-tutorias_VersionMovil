@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/segmentation_model_data.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class ModelArtifactsCard extends StatelessWidget {
   const ModelArtifactsCard({required this.artifacts, super.key});
@@ -9,22 +9,25 @@ class ModelArtifactsCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Historial de artefactos',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: SegmentationDashboardColors.textPrimary,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 16),
@@ -41,6 +44,9 @@ class _ArtifactTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return InkWell(
       onTap: () {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -58,12 +64,12 @@ class _ArtifactTile extends StatelessWidget {
             Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                color: SegmentationDashboardColors.background,
+                color: theme.colorScheme.surfaceContainer,
                 borderRadius: BorderRadius.circular(8),
               ),
               child: Icon(
                 _getIcon(item.type),
-                color: SegmentationDashboardColors.primaryBlue,
+                color: theme.colorScheme.primary,
                 size: 20,
               ),
             ),
@@ -74,17 +80,17 @@ class _ArtifactTile extends StatelessWidget {
                 children: [
                   Text(
                     item.displayName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 12,
                       fontWeight: FontWeight.bold,
-                      color: SegmentationDashboardColors.textPrimary,
+                      color: theme.colorScheme.onSurface,
                     ),
                   ),
                   Text(
                     item.fileName,
-                    style: const TextStyle(
+                    style: TextStyle(
                       fontSize: 10,
-                      color: SegmentationDashboardColors.textSecondary,
+                      color: appColors.mutedText,
                     ),
                   ),
                 ],
@@ -92,14 +98,14 @@ class _ArtifactTile extends StatelessWidget {
             ),
             Text(
               item.createdAt.split(' ')[0], // Solo fecha
-              style: const TextStyle(
+              style: TextStyle(
                 fontSize: 10,
-                color: SegmentationDashboardColors.textSecondary,
+                color: appColors.mutedText,
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right_rounded,
-              color: SegmentationDashboardColors.border,
+              color: appColors.cardBorder,
             ),
           ],
         ),

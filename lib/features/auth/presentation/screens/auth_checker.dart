@@ -4,7 +4,7 @@ import 'package:provider/provider.dart';
 import '../../../../core/common_components/app_loading_indicator.dart';
 import '../../../../core/util/view_state.dart';
 import '../../../../navigation/app_screen.dart';
-import '../viewmodels/auth_provider.dart';
+import '../providers/auth_provider.dart';
 
 class AuthChecker extends StatefulWidget {
   const AuthChecker({super.key});

@@ -1,7 +1,7 @@
 name: casei_tutorias
 description: Version movíl del sistema de gestion academica CACEI.
 publish_to: 'none'
-version: 0.1.0+8
+version: 0.1.0+10
 
 environment:
   sdk: ^3.12.0-327.4.beta
@@ -13,7 +13,6 @@ dependencies:
     sdk: flutter
   flutter_secure_storage: ^10.3.1
   geolocator: ^14.0.3
-  get_it: ^9.2.1
   http: ^1.6.0
   provider: ^6.1.5+1
   shared_preferences: ^2.5.5

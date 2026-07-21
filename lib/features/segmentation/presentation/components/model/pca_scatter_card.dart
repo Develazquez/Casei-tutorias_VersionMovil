@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/segmentation_model_data.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class PcaScatterCard extends StatelessWidget {
   const PcaScatterCard({required this.points, super.key});
@@ -9,38 +9,42 @@ class PcaScatterCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Dispersión PC1/PC2',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: SegmentationDashboardColors.textPrimary,
+              color: theme.colorScheme.onSurface,
             ),
           ),
-          const Text(
+          Text(
             'Alumnos segmentados sobre componentes principales',
             style: TextStyle(
-              fontSize: 11,
-              color: SegmentationDashboardColors.textSecondary,
+              fontSize: 10,
+              color: appColors.mutedText,
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            height: 200,
-            width: double.infinity,
-            child: CustomPaint(painter: _ScatterPainter(points)),
+          AspectRatio(
+            aspectRatio: 1.4, // Más compacto para móvil
+            child: ClipRect(
+              child: CustomPaint(painter: _ScatterPainter(points, appColors)),
+            ),
           ),
-          const SizedBox(height: 16),
+          const SizedBox(height: 20),
           const _Legend(),
         ],
       ),
@@ -53,25 +57,29 @@ class _Legend extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Wrap(
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    
+    return Wrap(
       spacing: 12,
       runSpacing: 8,
+      alignment: WrapAlignment.start,
       children: [
         _LegendItem(
           label: 'Regular',
-          color: SegmentationDashboardColors.profileRegular,
+          color: appColors.profileRegular,
         ),
         _LegendItem(
           label: 'Atípico',
-          color: SegmentationDashboardColors.profileAtypical,
+          color: appColors.profileAtypical,
         ),
         _LegendItem(
           label: 'Crítico',
-          color: SegmentationDashboardColors.profileCritical,
+          color: appColors.profileCritical,
         ),
         _LegendItem(
           label: 'Riesgo moderado',
-          color: SegmentationDashboardColors.profileModerate,
+          color: appColors.profileModerateRisk,
         ),
       ],
     );
@@ -85,6 +93,7 @@ class _LegendItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final appColors = Theme.of(context).extension<AppThemeColors>()!;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: [
@@ -96,9 +105,9 @@ class _LegendItem extends StatelessWidget {
         const SizedBox(width: 4),
         Text(
           label,
-          style: const TextStyle(
+          style: TextStyle(
             fontSize: 10,
-            color: SegmentationDashboardColors.textSecondary,
+            color: appColors.mutedText,
           ),
         ),
       ],
@@ -107,63 +116,68 @@ class _LegendItem extends StatelessWidget {
 }
 
 class _ScatterPainter extends CustomPainter {
-  _ScatterPainter(this.points);
+  _ScatterPainter(this.points, this.appColors);
   final List<PcaPoint> points;
+  final AppThemeColors appColors;
 
   @override
   void paint(Canvas canvas, Size size) {
     final paint = Paint()..style = PaintingStyle.fill;
 
-    // Dibujar ejes
+    // Dibujar ejes centrados
     final axisPaint = Paint()
-      ..color = SegmentationDashboardColors.border
-      ..strokeWidth = 1;
+      ..color = appColors.cardBorder.withValues(alpha: 0.8)
+      ..strokeWidth = 1.5;
+
+    final double centerX = size.width / 2;
+    final double centerY = size.height / 2;
 
     canvas.drawLine(
-      Offset(0, size.height / 2),
-      Offset(size.width, size.height / 2),
+      Offset(0, centerY),
+      Offset(size.width, centerY),
       axisPaint,
     );
     canvas.drawLine(
-      Offset(size.width / 2, 0),
-      Offset(size.width / 2, size.height),
+      Offset(centerX, 0),
+      Offset(centerX, size.height),
       axisPaint,
     );
 
     if (points.isEmpty) return;
 
-    // Normalizar puntos al tamaño del lienzo
-    // Asumimos rango [-4, 4] para PCA
-    const double range = 8.0;
-    final double scaleX = size.width / range;
-    final double scaleY = size.height / range;
+    // Normalizar puntos al tamaño del lienzo con margen de seguridad
+    const double range = 10.0;
+    final double scaleX = (size.width - 20) / range;
+    final double scaleY = (size.height - 20) / range;
 
     for (final point in points) {
-      final double dx = (point.x + range / 2) * scaleX;
-      final double dy = (range / 2 - point.y) * scaleY;
+      final double dx = centerX + (point.x * scaleX);
+      final double dy = centerY - (point.y * scaleY);
 
-      paint.color = _getColor(point.label).withValues(alpha: 0.6);
-      canvas.drawCircle(Offset(dx, dy), 4, paint);
+      // Dibujar punto con borde para contraste
+      final color = _getColor(point.label);
+      paint.color = color.withValues(alpha: 0.6);
+      canvas.drawCircle(Offset(dx, dy), 4.5, paint);
 
-      paint.color = _getColor(point.label);
+      paint.color = color;
       paint.style = PaintingStyle.stroke;
       paint.strokeWidth = 1;
-      canvas.drawCircle(Offset(dx, dy), 4, paint);
+      canvas.drawCircle(Offset(dx, dy), 4.5, paint);
       paint.style = PaintingStyle.fill;
     }
   }
 
   Color _getColor(String label) {
     if (label.contains('Regular')) {
-      return SegmentationDashboardColors.profileRegular;
+      return appColors.profileRegular;
     }
     if (label.contains('Atípico')) {
-      return SegmentationDashboardColors.profileAtypical;
+      return appColors.profileAtypical;
     }
     if (label.contains('Crítico')) {
-      return SegmentationDashboardColors.profileCritical;
+      return appColors.profileCritical;
     }
-    return SegmentationDashboardColors.profileModerate;
+    return appColors.profileModerateRisk;
   }
 
   @override

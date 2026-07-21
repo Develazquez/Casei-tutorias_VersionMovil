@@ -5,11 +5,11 @@ import 'package:provider/provider.dart';
 
 import '../../../../core/constants/app_constants.dart';
 import '../../../../core/security/screen_capture_protection_service.dart';
-import '../../../../core/theme/cacei_ui_colors.dart';
+import '../../../../core/theme/theme_casei_material3.dart';
 import '../../../../core/util/view_state.dart';
 import '../../../../navigation/app_screen.dart';
 import '../components/auth_text_field.dart';
-import '../viewmodels/auth_provider.dart';
+import '../providers/auth_provider.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -21,6 +21,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  String? _localError;
 
   @override
   void initState() {
@@ -48,8 +49,11 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   @override
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Scaffold(
-      backgroundColor: CaceiUiColors.background,
+      backgroundColor: theme.colorScheme.surface,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -65,27 +69,26 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.school_outlined,
                         size: 64,
-                        color: CaceiUiColors.primary,
+                        color: theme.colorScheme.primary,
                       ),
                       const SizedBox(height: 18),
                       Text(
                         'CACEI - Tutorías',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineMedium
-                            ?.copyWith(
-                              fontWeight: FontWeight.w800,
-                              color: CaceiUiColors.titleText,
-                            ),
+                        style: theme.textTheme.headlineMedium?.copyWith(
+                          fontWeight: FontWeight.w800,
+                          color: theme.colorScheme.onSurface,
+                        ),
                       ),
                       const SizedBox(height: 8),
                       Text(
                         'Dashboard de segmentación académica',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                          color: CaceiUiColors.secondaryText,
+                        style: theme.textTheme.bodyLarge?.copyWith(
+                          color: appColors.mutedText,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -110,11 +113,26 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                           onPressed: auth.state == ViewState.loading
                               ? null
                               : () async {
+                                  final email = _emailController.text.trim();
+                                  final password = _passwordController.text;
+
+                                  if (email.isEmpty || password.isEmpty) {
+                                    setState(() => _localError = 'Por favor, ingresa tu correo y contraseña institucional.');
+                                    return;
+                                  }
+
+                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
+                                    setState(() => _localError = 'El formato del correo electrónico no es válido.');
+                                    return;
+                                  }
+
+                                  setState(() => _localError = null);
+
                                   final ok = await context
                                       .read<AuthProvider>()
                                       .login(
-                                        email: _emailController.text,
-                                        password: _passwordController.text,
+                                        email: email,
+                                        password: password,
                                       );
                                   if (!mounted || !ok) return;
                                   await Future<void>.delayed(Duration.zero);
@@ -125,17 +143,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   );
                                 },
                           style: FilledButton.styleFrom(
-                            backgroundColor: CaceiUiColors.primary,
+                            backgroundColor: theme.colorScheme.primary,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(8),
                             ),
                           ),
                           icon: auth.state == ViewState.loading
-                              ? const SizedBox.square(
+                              ? SizedBox.square(
                                   dimension: 18,
                                   child: CircularProgressIndicator(
                                     strokeWidth: 2,
-                                    color: Colors.white,
+                                    color: theme.colorScheme.onPrimary,
                                   ),
                                 )
                               : const Icon(Icons.login),
@@ -150,26 +168,24 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                 context,
                                 AppScreen.register.route,
                               ),
-                        child: const Text(
+                        child: Text(
                           'Crear cuenta institucional',
-                          style: TextStyle(color: CaceiUiColors.primary),
+                          style: TextStyle(color: theme.colorScheme.primary),
                         ),
                       ),
-                      if (auth.errorMessage != null) ...[
+                      if (_localError != null || auth.errorMessage != null) ...[
                         const SizedBox(height: 16),
                         Container(
                           padding: const EdgeInsets.all(12),
                           decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.errorContainer,
+                            color: theme.colorScheme.errorContainer,
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            auth.errorMessage!,
+                            _localError ?? auth.errorMessage!,
                             textAlign: TextAlign.center,
                             style: TextStyle(
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.onErrorContainer,
+                              color: theme.colorScheme.onErrorContainer,
                               fontSize: 13,
                             ),
                           ),

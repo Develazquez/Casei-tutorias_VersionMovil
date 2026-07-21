@@ -49,16 +49,17 @@ class _FakeGpsGuardState extends State<FakeGpsGuard> {
   @override
   Widget build(BuildContext context) {
     final shouldBlock = widget.enabled && _mockLocationDetected;
+    final theme = Theme.of(context);
     return Stack(
       children: [
         AbsorbPointer(absorbing: shouldBlock, child: widget.child),
         if (shouldBlock)
-          const _SecurityBlocker(
+          _SecurityBlocker(
             icon: Icons.location_off,
-            title: 'Ubicación no confiable',
+            title: 'Seguridad de Ubicación',
             message:
-                'Se detectó una ubicación simulada. Desactiva Fake GPS y vuelve a abrir la app.',
-            color: Color(0xFFB3261E),
+                'Se ha detectado el uso de una ubicación simulada. Por seguridad, deshabilita cualquier aplicación de "Fake GPS" y reinicia la aplicación.',
+            color: theme.colorScheme.error,
           ),
       ],
     );

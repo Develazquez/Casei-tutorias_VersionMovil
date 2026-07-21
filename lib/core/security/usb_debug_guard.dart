@@ -61,27 +61,29 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
   Widget build(BuildContext context) {
     final shouldBlock = widget.enabled && _blocked;
     final reasons = _blockedReasons;
+    final theme = Theme.of(context);
+
     return Stack(
       children: [
         AbsorbPointer(absorbing: shouldBlock, child: widget.child),
         if (shouldBlock)
           Positioned.fill(
             child: ColoredBox(
-              color: const Color(0xFF111827),
+              color: theme.colorScheme.inverseSurface,
               child: SafeArea(
                 child: Padding(
                   padding: const EdgeInsets.all(28),
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      const Icon(Icons.security, color: Colors.white, size: 76),
+                      Icon(Icons.security, color: theme.colorScheme.onInverseSurface, size: 76),
                       const SizedBox(height: 18),
                       Text(
                         'Acceso bloqueado por seguridad',
                         textAlign: TextAlign.center,
-                        style: Theme.of(context).textTheme.headlineSmall
+                        style: theme.textTheme.headlineSmall
                             ?.copyWith(
-                              color: Colors.white,
+                              color: theme.colorScheme.onInverseSurface,
                               fontWeight: FontWeight.w900,
                             ),
                       ),
@@ -89,9 +91,7 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                       Text(
                         'CACEI Tutorías no puede ejecutarse mientras el dispositivo tenga herramientas de depuración activas.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyLarge?.copyWith(color: Colors.white70),
+                        style: theme.textTheme.bodyLarge?.copyWith(color: theme.colorScheme.onInverseSurface.withValues(alpha: 0.7)),
                       ),
                       const SizedBox(height: 18),
                       ...reasons.map(
@@ -99,9 +99,9 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                           padding: const EdgeInsets.only(bottom: 8),
                           child: DecoratedBox(
                             decoration: BoxDecoration(
-                              color: const Color(0x1AFFFFFF),
+                              color: theme.colorScheme.onInverseSurface.withValues(alpha: 0.1),
                               borderRadius: BorderRadius.circular(8),
-                              border: Border.all(color: Colors.white24),
+                              border: Border.all(color: theme.colorScheme.onInverseSurface.withValues(alpha: 0.2)),
                             ),
                             child: Padding(
                               padding: const EdgeInsets.symmetric(
@@ -111,9 +111,9 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                               child: Row(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  const Icon(
+                                  Icon(
                                     Icons.error_outline,
-                                    color: Colors.white,
+                                    color: theme.colorScheme.onInverseSurface,
                                     size: 18,
                                   ),
                                   const SizedBox(width: 8),
@@ -121,8 +121,8 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                                     child: Text(
                                       reason,
                                       textAlign: TextAlign.center,
-                                      style: const TextStyle(
-                                        color: Colors.white,
+                                      style: TextStyle(
+                                        color: theme.colorScheme.onInverseSurface,
                                         fontWeight: FontWeight.w700,
                                       ),
                                     ),
@@ -137,9 +137,7 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
                       Text(
                         'Desactiva la depuración USB y las opciones de desarrollador; después cierra y vuelve a abrir la app.',
                         textAlign: TextAlign.center,
-                        style: Theme.of(
-                          context,
-                        ).textTheme.bodyMedium?.copyWith(color: Colors.white70),
+                        style: theme.textTheme.bodyMedium?.copyWith(color: theme.colorScheme.onInverseSurface.withValues(alpha: 0.7)),
                       ),
                     ],
                   ),
@@ -183,9 +181,9 @@ class _UsbDebugGuardState extends State<UsbDebugGuard>
 
   List<String> get _blockedReasons {
     final reasons = <String>[];
-    if (_adbEnabled) reasons.add('Depuración USB activada');
+    if (_adbEnabled) reasons.add('Depuración USB habilitada');
     if (_developerOptionsEnabled) {
-      reasons.add('Opciones de desarrollador activadas');
+      reasons.add('Opciones de desarrollador activas');
     }
     if (reasons.isEmpty) reasons.add('Entorno de ejecución no seguro');
     return reasons;

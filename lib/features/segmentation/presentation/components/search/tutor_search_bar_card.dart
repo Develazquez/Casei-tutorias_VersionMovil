@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class TutorSearchBarCard extends StatefulWidget {
   const TutorSearchBarCard({
@@ -26,12 +26,15 @@ class _TutorSearchBarCardState extends State<TutorSearchBarCard> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+
     return Container(
-      padding: const EdgeInsets.all(12),
+      padding: const EdgeInsets.symmetric(horizontal: 12),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Row(
         children: [
@@ -41,14 +44,14 @@ class _TutorSearchBarCardState extends State<TutorSearchBarCard> {
               textInputAction: TextInputAction.search,
               decoration: InputDecoration(
                 hintText: 'Busca alumnos...',
-                hintStyle: const TextStyle(
-                  color: SegmentationDashboardColors.textSecondary,
+                hintStyle: TextStyle(
+                  color: appColors.mutedText,
                   fontSize: 14,
                 ),
                 border: InputBorder.none,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.search_rounded,
-                  color: SegmentationDashboardColors.textSecondary,
+                  color: appColors.mutedText,
                 ),
                 suffixIcon: _controller.text.isNotEmpty
                     ? IconButton(
@@ -69,14 +72,15 @@ class _TutorSearchBarCardState extends State<TutorSearchBarCard> {
           ),
           const SizedBox(width: 8),
           Container(
-            height: 48,
-            width: 48,
+            height: 40,
+            width: 40,
             decoration: BoxDecoration(
-              color: const Color(0xFF2563EB),
+              color: theme.colorScheme.primary,
               borderRadius: BorderRadius.circular(12),
             ),
             child: IconButton(
-              icon: const Icon(Icons.filter_list_rounded, color: Colors.white),
+              iconSize: 20,
+              icon: Icon(Icons.filter_list_rounded, color: theme.colorScheme.onPrimary),
               onPressed: () {
                 // Futura funcionalidad de filtros avanzados
               },

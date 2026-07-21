@@ -15,23 +15,39 @@ class AuthProvider extends ChangeNotifier {
     this._loginUseCase,
     this._registerUseCase,
     this._logoutUseCase,
-    this._getCurrentUserUseCase,
-  );
+    this._getCurrentUserUseCase, {
+    Stream<bool> authStateChanges = const Stream<bool>.empty(),
+  }) {
+    _authStateSubscription = authStateChanges.listen(_onAuthStateChanged);
+  }
 
   final LoginUseCase _loginUseCase;
   final RegisterUseCase _registerUseCase;
   final LogoutUseCase _logoutUseCase;
   final GetCurrentUserUseCase _getCurrentUserUseCase;
+  StreamSubscription<bool>? _authStateSubscription;
   static const _authTimeout = Duration(seconds: 15);
 
   ViewState _state = ViewState.idle;
   String? _errorMessage;
   UserEntity? _user;
+  String? _statusMessage;
+  bool _emailConfirmationPending = false;
+  bool _authCallbackCompleted = false;
+  bool _handlingAuthCallback = false;
 
   ViewState get state => _state;
   String? get errorMessage => _errorMessage;
   UserEntity? get user => _user;
   bool get isAuthenticated => _user != null;
+  String? get statusMessage => _statusMessage;
+  bool get emailConfirmationPending => _emailConfirmationPending;
+
+  bool consumeAuthCallbackCompletion() {
+    if (!_authCallbackCompleted) return false;
+    _authCallbackCompleted = false;
+    return true;
+  }
 
   Future<void> restoreSession() async {
     _state = ViewState.loading;
@@ -55,6 +71,8 @@ class AuthProvider extends ChangeNotifier {
   Future<bool> login({required String email, required String password}) async {
     _state = ViewState.loading;
     _errorMessage = null;
+    _statusMessage = null;
+    _emailConfirmationPending = false;
     notifyListeners();
     try {
       _user = await _loginUseCase(
@@ -93,6 +111,8 @@ class AuthProvider extends ChangeNotifier {
   }) async {
     _state = ViewState.loading;
     _errorMessage = null;
+    _statusMessage = null;
+    _emailConfirmationPending = false;
     notifyListeners();
     try {
       _user = await _registerUseCase(
@@ -103,6 +123,13 @@ class AuthProvider extends ChangeNotifier {
         role: role,
         telefono: telefono,
       ).timeout(_authTimeout);
+      _state = ViewState.success;
+      notifyListeners();
+      return true;
+    } on EmailConfirmationRequiredException catch (e) {
+      _user = null;
+      _statusMessage = e.message;
+      _emailConfirmationPending = true;
       _state = ViewState.success;
       notifyListeners();
       return true;
@@ -132,7 +159,34 @@ class AuthProvider extends ChangeNotifier {
       // Local state must be cleared even if the remote logout call fails.
     }
     _user = null;
+    _statusMessage = null;
+    _emailConfirmationPending = false;
     _state = ViewState.idle;
     notifyListeners();
+  }
+
+  Future<void> _onAuthStateChanged(bool signedIn) async {
+    if (!signedIn ||
+        _state == ViewState.loading ||
+        _user != null ||
+        _handlingAuthCallback) {
+      return;
+    }
+
+    _handlingAuthCallback = true;
+    await restoreSession();
+    if (_user != null) {
+      _emailConfirmationPending = false;
+      _statusMessage = null;
+      _authCallbackCompleted = true;
+      notifyListeners();
+    }
+    _handlingAuthCallback = false;
+  }
+
+  @override
+  void dispose() {
+    _authStateSubscription?.cancel();
+    super.dispose();
   }
 }

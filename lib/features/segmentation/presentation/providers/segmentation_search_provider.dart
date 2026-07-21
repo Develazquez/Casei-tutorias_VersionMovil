@@ -5,8 +5,8 @@ import '../../domain/models/tutor_search_models.dart';
 import '../../domain/usecases/search_tutorados_use_case.dart';
 import 'segmentation_provider.dart';
 
-class SegmentationSearchViewModel extends ChangeNotifier {
-  SegmentationSearchViewModel(this._sourceProvider) {
+class SegmentationSearchProvider extends ChangeNotifier {
+  SegmentationSearchProvider(this._sourceProvider) {
     _sourceProvider.addListener(_onSourceChanged);
     _processSearch();
   }

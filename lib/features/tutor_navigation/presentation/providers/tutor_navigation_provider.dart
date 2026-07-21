@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import '../../../../navigation/app_screen.dart';
 import '../models/tutor_navigation_item.dart';
 
-class TutorNavigationViewModel extends ChangeNotifier {
-  TutorNavigationViewModel({String initialId = 'segmentation'}) {
+class TutorNavigationProvider extends ChangeNotifier {
+  TutorNavigationProvider({String initialId = 'segmentation'}) {
     _selectedIndex = _items.indexWhere((item) => item.id == initialId);
     if (_selectedIndex == -1) _selectedIndex = 0;
   }

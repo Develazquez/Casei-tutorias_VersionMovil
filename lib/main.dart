@@ -1,13 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'app.dart';
 import 'core/constants/app_constants.dart';
+import 'core/di/app_providers.dart';
 import 'core/security/firebase_messaging_service.dart';
-import 'features/auth/presentation/viewmodels/auth_provider.dart';
-import 'features/segmentation/presentation/viewmodels/segmentation_provider.dart';
-import 'injection_container.dart' as di;
+import 'core/security/secure_storage_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -20,18 +18,22 @@ Future<void> main() async {
   await Supabase.initialize(
     url: AppConstants.supabaseUrl,
     publishableKey: AppConstants.supabaseAnonKey,
+    authOptions: const FlutterAuthClientOptions(
+      authFlowType: AuthFlowType.pkce,
+      detectSessionInUri: true,
+    ),
   );
-  await di.init();
+  final secureStorage = SecureStorageService();
+  final messagingService = FirebaseMessagingService(secureStorage);
   if (AppConstants.enableRemoteWipe) {
-    await di.sl<FirebaseMessagingService>().initialize();
+    await messagingService.initialize();
   }
 
   runApp(
-    MultiProvider(
-      providers: [
-        ChangeNotifierProvider(create: (_) => di.sl<AuthProvider>()),
-        ChangeNotifierProvider(create: (_) => di.sl<SegmentationProvider>()),
-      ],
+    AppProviders(
+      supabaseClient: Supabase.instance.client,
+      secureStorage: secureStorage,
+      messagingService: messagingService,
       child: const CaseiTutoriasApp(),
     ),
   );

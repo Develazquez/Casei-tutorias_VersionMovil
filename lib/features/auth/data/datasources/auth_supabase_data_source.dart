@@ -2,9 +2,11 @@ import 'dart:async';
 
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
+import '../../../../core/constants/app_constants.dart';
 import '../../../../core/errors/failures.dart';
 import '../../../../core/security/firebase_messaging_service.dart';
 import '../../../../core/storage/token_storage.dart';
+import '../../../../core/util/auth_error_mapper.dart';
 import '../models/user_dto.dart';
 
 class AuthSupabaseDataSource {
@@ -19,6 +21,12 @@ class AuthSupabaseDataSource {
   final FirebaseMessagingService _messagingService;
   static const _networkTimeout = Duration(seconds: 12);
   static const _supportedRoles = {'director', 'tutor', 'docente', 'alumno'};
+
+  Stream<bool> watchSignedIn() {
+    return _client.auth.onAuthStateChange
+        .where((change) => change.event == supabase.AuthChangeEvent.signedIn)
+        .map((change) => change.session != null);
+  }
 
   Future<UserDto> login({
     required String email,
@@ -35,7 +43,7 @@ class AuthSupabaseDataSource {
         throw const AuthException('No se pudo iniciar sesión.');
       }
 
-      final profile = await _fetchProfile(user.id);
+      final profile = await _fetchProfile(user);
       final dto = _dtoFromProfile(
         profile,
         token: session.accessToken,
@@ -45,7 +53,7 @@ class AuthSupabaseDataSource {
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(AuthErrorMapper.map(e.message));
     } on supabase.PostgrestException catch (e) {
       throw ServerException(e.message);
     } on TimeoutException {
@@ -72,7 +80,18 @@ class AuthSupabaseDataSource {
 
     try {
       final response = await _client.auth
-          .signUp(email: email.trim(), password: password)
+          .signUp(
+            email: email.trim(),
+            password: password,
+            emailRedirectTo: AppConstants.authEmailRedirectUrl,
+            data: {
+              'nombre': nombre.trim(),
+              'apellidos': apellidos.trim(),
+              'telefono': _emptyToNull(telefono),
+              'rol': role,
+              'activo': true,
+            },
+          )
           .timeout(_networkTimeout);
 
       final user = response.user;
@@ -82,28 +101,15 @@ class AuthSupabaseDataSource {
       }
 
       if (session == null) {
-        throw const AuthException(
-          'Cuenta creada. Revisa tu correo para confirmar el acceso antes de iniciar sesión.',
+        throw const EmailConfirmationRequiredException(
+          'Cuenta creada. Revisa tu correo y confirma el acceso para volver a la app.',
         );
       }
 
-      final profile = await _client
-          .from('profiles')
-          .upsert({
-            'id': user.id,
-            'email': user.email ?? email.trim(),
-            'nombre': nombre.trim(),
-            'apellidos': apellidos.trim(),
-            'telefono': _emptyToNull(telefono),
-            'rol': role,
-            'activo': true,
-          })
-          .select()
-          .single()
-          .timeout(_networkTimeout);
+      final profile = await _fetchProfile(user);
 
       final dto = _dtoFromProfile(
-        Map<String, dynamic>.from(profile),
+        profile,
         token: session.accessToken,
         fallbackEmail: user.email ?? email.trim(),
       );
@@ -111,7 +117,7 @@ class AuthSupabaseDataSource {
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
     } on supabase.AuthException catch (e) {
-      throw AuthException(e.message);
+      throw AuthException(AuthErrorMapper.map(e.message));
     } on supabase.PostgrestException catch (e) {
       throw ServerException(e.message);
     } on TimeoutException {
@@ -125,7 +131,7 @@ class AuthSupabaseDataSource {
       final session = _client.auth.currentSession;
       if (user == null || session == null) return null;
 
-      final profile = await _fetchProfile(user.id).timeout(_networkTimeout);
+      final profile = await _fetchProfile(user).timeout(_networkTimeout);
       final dto = _dtoFromProfile(
         profile,
         token: session.accessToken,
@@ -146,15 +152,41 @@ class AuthSupabaseDataSource {
     await _tokenStorage.clear();
   }
 
-  Future<Map<String, dynamic>> _fetchProfile(String userId) async {
+  Future<Map<String, dynamic>> _fetchProfile(supabase.User user) async {
     final profile = await _client
         .from('profiles')
         .select('id, nombre, apellidos, email, rol, telefono, activo')
-        .eq('id', userId)
+        .eq('id', user.id)
+        .maybeSingle()
+        .timeout(_networkTimeout);
+
+    if (profile != null) {
+      return Map<String, dynamic>.from(profile);
+    }
+
+    final metadata = user.userMetadata ?? const <String, dynamic>{};
+    final metadataRole = metadata['rol']?.toString() ?? '';
+    final role =
+        _supportedRoles.contains(metadataRole) && metadataRole != 'alumno'
+        ? metadataRole
+        : 'tutor';
+
+    final createdProfile = await _client
+        .from('profiles')
+        .upsert({
+          'id': user.id,
+          'email': user.email ?? '',
+          'nombre': metadata['nombre']?.toString().trim() ?? '',
+          'apellidos': metadata['apellidos']?.toString().trim() ?? '',
+          'telefono': _emptyToNull(metadata['telefono']?.toString()),
+          'rol': role,
+          'activo': true,
+        })
+        .select('id, nombre, apellidos, email, rol, telefono, activo')
         .single()
         .timeout(_networkTimeout);
 
-    return Map<String, dynamic>.from(profile);
+    return Map<String, dynamic>.from(createdProfile);
   }
 
   UserDto _dtoFromProfile(

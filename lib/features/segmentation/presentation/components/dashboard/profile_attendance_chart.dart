@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../models/segmentation_dashboard_data.dart';
-import '../../../../../core/theme/segmentation_dashboard_colors.dart';
+import '../../../../../core/theme/theme_casei_material3.dart';
 
 class ProfileAttendanceChart extends StatelessWidget {
   const ProfileAttendanceChart({required this.metrics, super.key});
@@ -9,31 +9,42 @@ class ProfileAttendanceChart extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    final viewportWidth = MediaQuery.sizeOf(context).width - 64;
+    final chartWidth = viewportWidth > metrics.length * 70.0
+        ? viewportWidth
+        : metrics.length * 70.0;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: appColors.card,
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: SegmentationDashboardColors.border),
+        border: Border.all(color: appColors.cardBorder),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
+          Text(
             'Asistencia promedio por perfil',
             style: TextStyle(
               fontSize: 14,
               fontWeight: FontWeight.bold,
-              color: SegmentationDashboardColors.textPrimary,
+              color: theme.colorScheme.onSurface,
             ),
           ),
           const SizedBox(height: 24),
-          SizedBox(
-            height: 150,
-            child: Row(
-              crossAxisAlignment: CrossAxisAlignment.end,
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: metrics.map((m) => _BarItem(metric: m)).toList(),
+          SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: SizedBox(
+              height: 150,
+              width: chartWidth,
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: metrics.map((m) => _BarItem(metric: m)).toList(),
+              ),
             ),
           ),
         ],
@@ -48,22 +59,29 @@ class _BarItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = _getColor(metric.label);
+    final theme = Theme.of(context);
+    final appColors = theme.extension<AppThemeColors>()!;
+    final color = _getColor(appColors, metric.label);
+    final attendance = metric.averageAttendance.clamp(0.0, 100.0);
+
     return Column(
       mainAxisAlignment: MainAxisAlignment.end,
       children: [
-        Text(
-          '${metric.averageAttendance.round()}%',
-          style: TextStyle(
-            fontSize: 10,
-            fontWeight: FontWeight.bold,
-            color: color,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Text(
+            '${metric.averageAttendance.round()}%',
+            style: TextStyle(
+              fontSize: 10,
+              fontWeight: FontWeight.bold,
+              color: color,
+            ),
           ),
         ),
         const SizedBox(height: 4),
         Container(
-          width: 30,
-          height: (metric.averageAttendance / 100) * 100, // Escala relativa
+          width: 32,
+          height: (attendance / 100) * 110,
           decoration: BoxDecoration(
             color: color.withValues(alpha: 0.8),
             borderRadius: const BorderRadius.vertical(top: Radius.circular(4)),
@@ -71,13 +89,14 @@ class _BarItem extends StatelessWidget {
         ),
         const SizedBox(height: 8),
         SizedBox(
-          width: 50,
+          width: 64,
           child: Text(
             metric.label,
             textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 8,
-              color: SegmentationDashboardColors.textSecondary,
+            style: TextStyle(
+              fontSize: 9,
+              color: appColors.mutedText,
+              fontWeight: FontWeight.w500,
             ),
             maxLines: 2,
             overflow: TextOverflow.ellipsis,
@@ -87,10 +106,10 @@ class _BarItem extends StatelessWidget {
     );
   }
 
-  Color _getColor(String label) {
-    if (label == 'Regular') return SegmentationDashboardColors.profileRegular;
-    if (label == 'Atípico') return SegmentationDashboardColors.profileAtypical;
-    if (label == 'Crítico') return SegmentationDashboardColors.profileCritical;
-    return SegmentationDashboardColors.profileModerate;
+  Color _getColor(AppThemeColors appColors, String label) {
+    if (label == 'Regular') return appColors.profileRegular;
+    if (label == 'Atípico') return appColors.profileAtypical;
+    if (label == 'Crítico') return appColors.profileCritical;
+    return appColors.profileModerateRisk;
   }
 }

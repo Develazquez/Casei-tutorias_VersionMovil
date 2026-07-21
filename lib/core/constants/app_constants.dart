@@ -24,6 +24,11 @@ class AppConstants {
       ? _flutterSupabaseAnonKey
       : _expoSupabaseAnonKey;
 
+  static const String authEmailRedirectUrl = String.fromEnvironment(
+    'AUTH_EMAIL_REDIRECT_URL',
+    defaultValue: 'com.casei://callback/auth',
+  );
+
   static const bool enableScreenCaptureProtection = bool.fromEnvironment(
     'ENABLE_SCREEN_CAPTURE_PROTECTION',
     defaultValue: true,

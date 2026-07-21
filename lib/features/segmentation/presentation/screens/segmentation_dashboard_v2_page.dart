@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../core/theme/segmentation_dashboard_colors.dart';
-import '../../../auth/presentation/viewmodels/auth_provider.dart';
+import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../tutor_navigation/presentation/components/tutor_navigation_drawer.dart';
-import '../../../tutor_navigation/presentation/viewmodels/tutor_navigation_view_model.dart';
 import '../components/dashboard/segmentation_dashboard_header.dart';
 import '../components/dashboard/segmentation_dashboard_view.dart';
 import '../components/model/segmentation_model_view.dart';
 import '../components/search/segmentation_search_view.dart';
-import '../viewmodels/segmentation_dashboard_view_model.dart';
-import '../viewmodels/segmentation_navigation_view_model.dart';
-import '../viewmodels/segmentation_provider.dart';
+import '../components/tutorados/tutorados_view.dart';
+import '../providers/segmentation_dashboard_provider.dart';
+import '../providers/segmentation_navigation_provider.dart';
+import '../providers/segmentation_provider.dart';
 
 class SegmentationDashboardV2Page extends StatefulWidget {
   const SegmentationDashboardV2Page({super.key});
@@ -36,59 +35,43 @@ class _SegmentationDashboardV2PageState
 
   @override
   Widget build(BuildContext context) {
-    return MultiProvider(
-      providers: [
-        ChangeNotifierProvider(
-          create: (context) => SegmentationDashboardViewModel(
-            context.read<SegmentationProvider>(),
-          ),
-        ),
-        ChangeNotifierProvider(
-          create: (context) => SegmentationNavigationViewModel(),
-        ),
-        ChangeNotifierProvider(
-          create: (context) =>
-              TutorNavigationViewModel(initialId: 'segmentation'),
-        ),
-      ],
-      child:
-          Consumer2<
-            SegmentationDashboardViewModel,
-            SegmentationNavigationViewModel
-          >(
-            builder: (context, dashboardVm, navViewModel, child) {
-              final auth = context.watch<AuthProvider>();
+    return Consumer2<
+      SegmentationDashboardProvider,
+      SegmentationNavigationProvider
+    >(
+      builder: (context, dashboardProvider, navigationProvider, child) {
+        final auth = context.watch<AuthProvider>();
+        final theme = Theme.of(context);
 
-              return Scaffold(
-                key: _scaffoldKey,
-                backgroundColor: SegmentationDashboardColors.background,
-                drawer: const TutorNavigationDrawer(),
-                body: SafeArea(
-                  child: Column(
-                    children: [
-                      SegmentationDashboardHeader(
-                        userName: auth.user?.name ?? 'Diego Velázquez Méndez',
-                        onMenuPressed: () =>
-                            _scaffoldKey.currentState?.openDrawer(),
-                        currentIndex: navViewModel.currentTabIndex,
-                        onTabChanged: navViewModel.setTab,
-                      ),
-                      Expanded(
-                        child: IndexedStack(
-                          index: navViewModel.currentTabIndex,
-                          children: const [
-                            SegmentationDashboardView(),
-                            SegmentationModelView(),
-                            SegmentationSearchView(),
-                          ],
-                        ),
-                      ),
+        return Scaffold(
+          key: _scaffoldKey,
+          backgroundColor: theme.colorScheme.surface,
+          drawer: const TutorNavigationDrawer(),
+          body: SafeArea(
+            child: Column(
+              children: [
+                SegmentationDashboardHeader(
+                  userName: auth.user?.name ?? 'Diego Velázquez Méndez',
+                  onMenuPressed: () => _scaffoldKey.currentState?.openDrawer(),
+                  currentIndex: navigationProvider.currentTabIndex,
+                  onTabChanged: navigationProvider.setTab,
+                ),
+                Expanded(
+                  child: IndexedStack(
+                    index: navigationProvider.currentTabIndex,
+                    children: const [
+                      SegmentationDashboardView(),
+                      SegmentationModelView(),
+                      SegmentationSearchView(),
+                      TutoradosView(),
                     ],
                   ),
                 ),
-              );
-            },
+              ],
+            ),
           ),
+        );
+      },
     );
   }
 }
