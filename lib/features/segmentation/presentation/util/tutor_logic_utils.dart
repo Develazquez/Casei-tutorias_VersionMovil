@@ -61,12 +61,7 @@ abstract final class TutorLogicUtils {
 
   static bool isUrgentTracking(SegmentationStudentEntity student) {
     final profile = normalizeProfileLabel(student.profileLabel);
-    final isCriticalOrRisk =
-        profile.contains('Crítico') || profile.contains('Riesgo');
-    final lowAttendance = student.attendanceRate < 75;
-    final manyDebts = student.delayedSubjects >= 3;
-
-    return isCriticalOrRisk && (lowAttendance || manyDebts);
+    return profile.contains('Crítico') || profile.contains('Riesgo');
   }
 
   static bool isLowAttendance(SegmentationStudentEntity student) {

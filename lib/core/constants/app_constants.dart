@@ -10,7 +10,7 @@ class AppConstants {
 
   static const String apiBaseUrl = '$_envApiBaseUrl/api/v1';
 
-  static const String segmentationApiUrl = '$apiBaseUrl/cacei/segmentation';
+  static const String segmentationApiUrl = '$_envApiBaseUrl/cacei/segmentation';
 
   static const String _expoSupabaseUrl = String.fromEnvironment(
     'EXPO_PUBLIC_SUPABASE_URL',

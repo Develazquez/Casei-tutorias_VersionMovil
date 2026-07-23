@@ -7,6 +7,7 @@ import '../../../tutor_navigation/presentation/components/tutor_navigation_drawe
 import '../components/dashboard/segmentation_dashboard_header.dart';
 import '../components/dashboard/segmentation_dashboard_view.dart';
 import '../components/search/segmentation_search_view.dart';
+import '../components/tutorados/tutorados_view.dart';
 import '../providers/segmentation_dashboard_provider.dart';
 import '../providers/segmentation_navigation_provider.dart';
 import '../providers/segmentation_provider.dart';
@@ -83,6 +84,7 @@ class _SegmentationDashboardV2PageState
                     children: const [
                       SegmentationDashboardView(),
                       SegmentationSearchView(),
+                      TutoradosView(),
                     ],
                   ),
                 ),

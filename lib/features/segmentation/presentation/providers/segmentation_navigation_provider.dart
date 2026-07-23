@@ -6,7 +6,7 @@ class SegmentationNavigationProvider extends ChangeNotifier {
   int get currentTabIndex => _currentTabIndex;
 
   void setTab(int index) {
-    if (index < 0 || index > 1) return;
+    if (index < 0 || index > 2) return;
     _currentTabIndex = index;
     notifyListeners();
   }

@@ -105,6 +105,12 @@ class _DashboardTabs extends StatelessWidget {
             onTap: () => onTabChanged(0),
           ),
           _TabItem(
+            label: 'Alumnos',
+            icon: Icons.people_outline_rounded,
+            isActive: currentIndex == 2,
+            onTap: () => onTabChanged(2),
+          ),
+          _TabItem(
             label: 'Búsqueda',
             icon: Icons.search_rounded,
             isActive: currentIndex == 1,

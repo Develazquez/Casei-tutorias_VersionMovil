@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:supabase_flutter/supabase_flutter.dart' as supabase;
 
 class TutorSupabaseDataSource {
@@ -21,13 +22,14 @@ class TutorSupabaseDataSource {
     try {
       final response = await _client
           .from('tutor_student_scope')
-          .select('id')
+          .select('student_id')
           .eq('tutor_id', userId)
           .eq('active', true);
 
       return (response as List).length;
-    } catch (_) {
-      // La tabla podría no existir en algunas instalaciones aún
+    } catch (e) {
+      // La vista podría no existir en algunas instalaciones aún
+      debugPrint('getTutorStudentScopeCount error: $e');
       return 0;
     }
   }

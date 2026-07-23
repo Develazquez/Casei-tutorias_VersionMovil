@@ -240,8 +240,8 @@ class _SummaryGrid extends StatelessWidget {
                 _buildItem(
                   itemWidth,
                   'Activos',
-                  data.activeCount,
-                  'Alumnos inscritos',
+                  data.totalStudents,
+                  'Tutorados este periodo',
                   Icons.person_search_rounded,
                   theme.colorScheme.primary,
                 ),
