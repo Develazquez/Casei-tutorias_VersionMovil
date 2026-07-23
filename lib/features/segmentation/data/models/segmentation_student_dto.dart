@@ -47,33 +47,85 @@ class SegmentationStudentDto {
 
   factory SegmentationStudentDto.fromJson(Map<String, dynamic> json) {
     // Aliases normalization
-    final id = json['id_estudiante'] ?? json['student_id'] ?? json['matricula'] ?? json['studentId'] ?? json['id'] ?? '';
-    final name = json['nombre'] ?? json['name'] ?? json['student_name'] ?? json['studentName'] ?? '';
+    final id =
+        json['id_estudiante'] ??
+        json['student_id'] ??
+        json['matricula'] ??
+        json['studentId'] ??
+        json['id'] ??
+        '';
+    final name =
+        json['nombre'] ??
+        json['name'] ??
+        json['student_name'] ??
+        json['studentName'] ??
+        '';
     final program = json['programa'] ?? json['program'] ?? '';
     final cohort = json['cohorte'] ?? json['cohort'] ?? '';
-    
-    final period = json['id_periodo'] ?? json['period_id'] ?? json['periodo'] ?? json['period'] ?? json['periodId'] ?? '';
-    
+
+    final period =
+        json['id_periodo'] ??
+        json['period_id'] ??
+        json['periodo'] ??
+        json['period'] ??
+        json['periodId'] ??
+        '';
+
     final cluster = json['cluster'] ?? 0;
-    
-    final profileLabel = json['perfil_academico'] ?? json['perfil_sugerido'] ?? json['cluster_profile'] ?? json['profile'] ?? json['profileLabel'] ?? 'Regular';
-    
-    final averageGrade = _toDouble(json['promedio_general'] ?? json['average_grade'] ?? json['averageGrade'] ?? json['average_grade'] ?? 0.0);
-    final attendanceRate = _toDouble(json['porcentaje_asistencia'] ?? json['attendance_rate'] ?? json['attendanceRate'] ?? 0.0);
-    
-    final failedSubs = _toDouble(json['materias_reprobadas_acumuladas'] ?? json['materias_reprobadas'] ?? json['failed_subjects'] ?? json['failedSubjects'] ?? 0.0);
-    final lagSubs = _toDouble(json['rezago_materias'] ?? json['lag_subjects'] ?? json['lagSubjects'] ?? 0.0);
-    
-    final membershipScore = _toDouble(json['membership_score'] ?? json['membershipScore'] ?? 0.0);
-    final distanceToCentroid = _toDouble(json['distance_to_centroid'] ?? json['distanceToCentroid']);
-    
+
+    final profileLabel =
+        json['perfil_academico'] ??
+        json['perfil_sugerido'] ??
+        json['cluster_profile'] ??
+        json['profile'] ??
+        json['profileLabel'] ??
+        'Sin segmentación';
+
+    final averageGrade = _toDouble(
+      json['promedio_general'] ??
+          json['average_grade'] ??
+          json['averageGrade'] ??
+          json['average_grade'] ??
+          0.0,
+    );
+    final attendanceRate = _toDouble(
+      json['porcentaje_asistencia'] ??
+          json['attendance_rate'] ??
+          json['attendanceRate'] ??
+          0.0,
+    );
+
+    final failedSubs = _toDouble(
+      json['materias_reprobadas_acumuladas'] ??
+          json['materias_reprobadas'] ??
+          json['failed_subjects'] ??
+          json['failedSubjects'] ??
+          0.0,
+    );
+    final lagSubs = _toDouble(
+      json['rezago_materias'] ??
+          json['lag_subjects'] ??
+          json['lagSubjects'] ??
+          0.0,
+    );
+
+    final membershipScore = _toDouble(
+      json['membership_score'] ?? json['membershipScore'] ?? 0.0,
+    );
+    final distanceToCentroid = _toDouble(
+      json['distance_to_centroid'] ?? json['distanceToCentroid'],
+    );
+
     final gender = json['sexo'] ?? json['gender'];
     final academicStatus = json['estatus_academico'] ?? json['academic_status'];
-    
-    final periodGrade = _toDouble(json['promedio_periodo'] ?? json['period_grade'] ?? json['periodGrade']);
-    
+
+    final periodGrade = _toDouble(
+      json['promedio_periodo'] ?? json['period_grade'] ?? json['periodGrade'],
+    );
+
     final semester = json['cuatrimestre'] ?? json['semester'];
-    final graduationProjection = json['proyeccion_egreso'] ?? json['graduation_projection'];
+    final graduationProjection =
+        json['proyeccion_egreso'] ?? json['graduation_projection'];
     final email = json['correo'] ?? json['email'];
 
     return SegmentationStudentDto(
@@ -82,7 +134,9 @@ class SegmentationStudentDto {
       program: program.toString(),
       cohort: cohort.toString(),
       period: period.toString(),
-      cluster: cluster is int ? cluster : (int.tryParse(cluster.toString()) ?? 0),
+      cluster: cluster is int
+          ? cluster
+          : (int.tryParse(cluster.toString()) ?? 0),
       profileLabel: profileLabel.toString(),
       averageGrade: averageGrade,
       attendanceRate: attendanceRate,
@@ -106,7 +160,6 @@ class SegmentationStudentDto {
     if (value is String) return double.tryParse(value) ?? 0.0;
     return 0.0;
   }
-
 
   SegmentationStudentEntity toEntity() {
     return SegmentationStudentEntity(

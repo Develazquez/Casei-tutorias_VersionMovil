@@ -36,7 +36,8 @@ class SegmentationProvider extends ChangeNotifier {
   SegmentationModelArtifactsEntity? _modelArtifacts;
   List<SegmentationStudentEntity> _tutorStudents = [];
   List<SegmentationStudentEntity> _visibleStudents = [];
-  
+  List<SegmentationStudentEntity> _remoteSearchResults = [];
+
   String _selectedProfile = 'Todos';
   String _selectedProgram = 'Todos';
   String _searchQuery = '';
@@ -49,6 +50,9 @@ class SegmentationProvider extends ChangeNotifier {
   SegmentationModelArtifactsEntity? get modelArtifacts => _modelArtifacts;
   List<SegmentationStudentEntity> get students => _visibleStudents;
   List<SegmentationStudentEntity> get allTutorStudents => _tutorStudents;
+  List<SegmentationStudentEntity> get remoteSearchResults =>
+      _remoteSearchResults;
+  bool get hasRemoteSearch => _isRealSearch;
   String get selectedProfile => _selectedProfile;
   String get selectedProgram => _selectedProgram;
   String get searchQuery => _searchQuery;
@@ -74,44 +78,80 @@ class SegmentationProvider extends ChangeNotifier {
       notifyListeners();
       return;
     }
+    if (role?.trim().toLowerCase() != 'tutor') {
+      _clearLoadedData();
+      _errorMessage =
+          'La aplicación móvil está disponible únicamente para tutores.';
+      _state = ViewState.error;
+      notifyListeners();
+      return;
+    }
 
     _state = ViewState.loading;
     _errorMessage = null;
+    _clearLoadedData();
     notifyListeners();
-    
-    try {
-      // 1. Check Tutor Status
-      _tutorStatus = await _getStatusUseCase(userId).timeout(const Duration(seconds: 10));
 
-      if (_tutorStatus?.state == TutorState.noGroup || _tutorStatus?.state == TutorState.noData) {
+    try {
+      _tutorStatus = await _getStatusUseCase(
+        userId,
+      ).timeout(const Duration(seconds: 10));
+
+      if (_tutorStatus?.state == TutorState.noGroup ||
+          _tutorStatus?.state == TutorState.noData) {
         _state = ViewState.success;
         notifyListeners();
         return;
       }
 
-      // 2. Fetch Summary
-      _summary = await _getSummaryUseCase(userId).timeout(const Duration(seconds: 10));
-      
-      // 3. Fetch Students
-      _tutorStudents = await _getStudentsUseCase(userId).timeout(const Duration(seconds: 15));
+      _tutorStudents = await _getStudentsUseCase(
+        userId,
+      ).timeout(const Duration(seconds: 15));
 
-      // 4. Fetch Model Artifacts (Optional)
       try {
-        _modelArtifacts = await _getModelArtifactsUseCase().timeout(const Duration(seconds: 10));
+        _summary = await _getSummaryUseCase(
+          userId,
+        ).timeout(const Duration(seconds: 10));
       } catch (_) {
-        // Artifacts are optional for the dashboard to work
+        // Search and institutional student data remain available without a run.
       }
-      
+
+      if (_tutorStatus?.state == TutorState.modelReady) {
+        try {
+          _modelArtifacts = await _getModelArtifactsUseCase().timeout(
+            const Duration(seconds: 10),
+          );
+        } catch (_) {
+          // Model artifacts are supplementary to the tutor dashboard.
+        }
+      }
+
       _applyFiltersAndSearch();
       _state = ViewState.success;
     } on AppException catch (e) {
       _errorMessage = e.message;
       _state = ViewState.error;
     } catch (error) {
-      _errorMessage = 'Error de conexión con el servidor CASEI. Reintente más tarde.';
+      _errorMessage =
+          'Error de conexión con el servidor CASEI. Reintente más tarde.';
       _state = ViewState.error;
     }
     notifyListeners();
+  }
+
+  void _clearLoadedData({bool keepStatus = false}) {
+    if (!keepStatus) {
+      _tutorStatus = null;
+    }
+    _summary = null;
+    _modelArtifacts = null;
+    _tutorStudents = [];
+    _visibleStudents = [];
+    _remoteSearchResults = [];
+    _selectedProfile = 'Todos';
+    _selectedProgram = 'Todos';
+    _searchQuery = '';
+    _isRealSearch = false;
   }
 
   void changeSearchQuery(String query) {
@@ -123,6 +163,7 @@ class SegmentationProvider extends ChangeNotifier {
   Future<void> search(String query, String userId) async {
     _searchQuery = query;
     if (query.trim().isEmpty) {
+      _remoteSearchResults = [];
       _isRealSearch = false;
       _applyFiltersAndSearch();
       notifyListeners();
@@ -134,11 +175,13 @@ class SegmentationProvider extends ChangeNotifier {
 
     try {
       final results = await _searchUseCase(userId, query);
+      _remoteSearchResults = results;
       _visibleStudents = results;
       _isRealSearch = true;
       _state = ViewState.success;
     } catch (_) {
       // Fallback to local search if remote fails
+      _remoteSearchResults = [];
       _isRealSearch = false;
       _applyFiltersAndSearch();
       _state = ViewState.success;
@@ -162,6 +205,7 @@ class SegmentationProvider extends ChangeNotifier {
     _searchQuery = '';
     _selectedProfile = 'Todos';
     _selectedProgram = 'Todos';
+    _remoteSearchResults = [];
     _isRealSearch = false;
     _applyFiltersAndSearch();
     notifyListeners();
@@ -173,9 +217,13 @@ class SegmentationProvider extends ChangeNotifier {
     var filtered = _tutorStudents;
 
     if (_selectedProfile != 'Todos') {
-      filtered = filtered.where((s) => 
-        TutorLogicUtils.normalizeProfileLabel(s.profileLabel) == _selectedProfile
-      ).toList();
+      filtered = filtered
+          .where(
+            (s) =>
+                TutorLogicUtils.normalizeProfileLabel(s.profileLabel) ==
+                _selectedProfile,
+          )
+          .toList();
     }
 
     if (_selectedProgram != 'Todos') {

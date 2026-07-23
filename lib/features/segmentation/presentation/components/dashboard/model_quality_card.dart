@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../../../../core/theme/theme_casei_material3.dart';
+import '../../models/segmentation_model_data.dart';
+import '../../providers/segmentation_model_provider.dart';
 
 class ModelQualityCard extends StatelessWidget {
   const ModelQualityCard({super.key});
@@ -8,6 +12,17 @@ class ModelQualityCard extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
+    final metrics = context
+        .watch<SegmentationModelProvider>()
+        .data
+        .qualityMetrics
+        .where(_isModelQualityMetric)
+        .take(3)
+        .toList();
+
+    if (metrics.isEmpty) {
+      return const SizedBox.shrink();
+    }
 
     return Container(
       padding: const EdgeInsets.all(16),
@@ -29,35 +44,49 @@ class ModelQualityCard extends StatelessWidget {
           ),
           const SizedBox(height: 16),
           Row(
-            children: [
-              _QualityMetric(
-                label: 'Silhouette',
-                value: '0.74',
-                color: appColors.profileAtypical,
-              ),
-              _QualityMetric(
-                label: 'D-Bouldin',
-                value: '1.21',
-                color: theme.colorScheme.primary,
-              ),
-              _QualityMetric(
-                label: 'Inercia',
-                value: '42.8',
-                color: appColors.profileModerateRisk,
-              ),
-            ],
+            children: metrics
+                .map(
+                  (metric) => _QualityMetric(
+                    label: metric.name,
+                    value: _formatValue(metric),
+                    color: _metricColor(metric, theme, appColors),
+                  ),
+                )
+                .toList(),
           ),
           const SizedBox(height: 12),
           Text(
             'Métricas calculadas durante el último reentrenamiento.',
-            style: TextStyle(
-              fontSize: 10,
-              color: appColors.mutedText,
-            ),
+            style: TextStyle(fontSize: 10, color: appColors.mutedText),
           ),
         ],
       ),
     );
+  }
+
+  bool _isModelQualityMetric(ModelQualityMetric metric) {
+    final name = metric.name.toLowerCase();
+    return name.contains('silhouette') ||
+        name.contains('davies') ||
+        name.contains('calinski') ||
+        name.contains('inercia');
+  }
+
+  String _formatValue(ModelQualityMetric metric) {
+    return metric.value.abs() >= 10
+        ? metric.value.toStringAsFixed(1)
+        : metric.value.toStringAsFixed(3);
+  }
+
+  Color _metricColor(
+    ModelQualityMetric metric,
+    ThemeData theme,
+    AppThemeColors appColors,
+  ) {
+    final name = metric.name.toLowerCase();
+    if (name.contains('silhouette')) return appColors.profileAtypical;
+    if (name.contains('davies')) return theme.colorScheme.primary;
+    return appColors.profileModerateRisk;
   }
 }
 
@@ -88,10 +117,7 @@ class _QualityMetric extends StatelessWidget {
           ),
           Text(
             label,
-            style: TextStyle(
-              fontSize: 10,
-              color: appColors.mutedText,
-            ),
+            style: TextStyle(fontSize: 10, color: appColors.mutedText),
           ),
         ],
       ),

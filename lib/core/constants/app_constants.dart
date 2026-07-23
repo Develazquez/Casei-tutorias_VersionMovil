@@ -2,12 +2,12 @@ class AppConstants {
   const AppConstants._();
 
   static const String appName = 'CACEI Tutorías';
-  
+
   static const String _envApiBaseUrl = String.fromEnvironment(
     'ACADEMIC_SEGMENTATION_API_URL',
-    defaultValue: 'http://127.0.0.1:8000',
+    defaultValue: 'https://microservicio-mineria.vercel.app',
   );
-  
+
   static const String apiBaseUrl = '$_envApiBaseUrl/api/v1';
 
   static const String segmentationApiUrl = '$apiBaseUrl/cacei/segmentation';
@@ -40,10 +40,6 @@ class AppConstants {
   static const bool enableScreenCaptureProtection = bool.fromEnvironment(
     'ENABLE_SCREEN_CAPTURE_PROTECTION',
     defaultValue: true,
-  );
-  static const bool enableFakeGpsGuard = bool.fromEnvironment(
-    'ENABLE_FAKE_GPS_GUARD',
-    defaultValue: false,
   );
   static const bool enableInactivitySessionTimeout = bool.fromEnvironment(
     'ENABLE_INACTIVITY_SESSION_TIMEOUT',

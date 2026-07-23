@@ -39,8 +39,11 @@ class SegmentationDashboardView extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.error_outline_rounded,
-                  color: theme.colorScheme.error, size: 48),
+              Icon(
+                Icons.error_outline_rounded,
+                color: theme.colorScheme.error,
+                size: 48,
+              ),
               const SizedBox(height: 16),
               Text(
                 viewModel.errorMessage!,
@@ -51,14 +54,16 @@ class SegmentationDashboardView extends StatelessWidget {
               ElevatedButton(
                 onPressed: () => _refresh(context),
                 child: const Text('Reintentar'),
-              )
+              ),
             ],
           ),
         ),
       );
     }
 
-    if (status != null && status.state != TutorState.modelReady) {
+    if (status != null &&
+        (status.state == TutorState.noGroup ||
+            status.state == TutorState.noData)) {
       return _buildStatusView(context, status);
     }
 
@@ -76,35 +81,35 @@ class SegmentationDashboardView extends StatelessWidget {
           const SizedBox(height: 4),
           Text(
             'Vista de seguimiento y análisis para el tutor, con métricas clave, perfiles académicos e información de atención prioritaria.',
-            style: TextStyle(
-              fontSize: 12,
-              color: appColors.mutedText,
-            ),
+            style: TextStyle(fontSize: 12, color: appColors.mutedText),
           ),
           const SizedBox(height: 12),
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primaryContainer.withValues(alpha: 0.5),
-              borderRadius: BorderRadius.circular(8),
-            ),
-            child: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Icon(Icons.auto_graph_rounded,
-                    size: 14, color: theme.colorScheme.primary),
-                const SizedBox(width: 6),
-                Text(
-                  'K-Means K=3 · pca_90',
-                  style: TextStyle(
-                    fontSize: 11,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary,
+          if (status?.state == TutorState.hasStudents)
+            Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: theme.colorScheme.secondaryContainer,
+                borderRadius: BorderRadius.circular(8),
+              ),
+              child: Row(
+                children: [
+                  Icon(
+                    Icons.info_outline_rounded,
+                    color: theme.colorScheme.onSecondaryContainer,
                   ),
-                ),
-              ],
+                  const SizedBox(width: 10),
+                  Expanded(
+                    child: Text(
+                      status!.displayMessage,
+                      style: TextStyle(
+                        color: theme.colorScheme.onSecondaryContainer,
+                        fontSize: 12,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
 
           const SizedBox(height: 24),
 
@@ -113,41 +118,45 @@ class SegmentationDashboardView extends StatelessWidget {
 
           const SizedBox(height: 24),
 
-          // Academic Profiles
-          Text(
-            'Perfiles Académicos',
-            style: theme.textTheme.titleMedium
-                ?.copyWith(fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 16),
-          ...data.profileMetrics.map((metric) {
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: ProfileStatusCard(
-                metric: metric,
-                allStudents:
-                    context.read<SegmentationProvider>().allTutorStudents,
+          if (status?.state == TutorState.modelReady) ...[
+            Text(
+              'Perfiles Académicos',
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
               ),
-            );
-          }),
-
-          const SizedBox(height: 24),
-
-          ProfileDistributionChart(metrics: data.profileMetrics),
-          const SizedBox(height: 12),
-          GenerationGenderCard(metrics: data.generationMetrics),
-
-          const SizedBox(height: 24),
+            ),
+            const SizedBox(height: 16),
+            ...data.profileMetrics.map((metric) {
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 12),
+                child: ProfileStatusCard(
+                  metric: metric,
+                  allStudents: context
+                      .read<SegmentationProvider>()
+                      .allTutorStudents,
+                ),
+              );
+            }),
+            const SizedBox(height: 24),
+            ProfileDistributionChart(metrics: data.profileMetrics),
+            if (data.generationMetrics.isNotEmpty) ...[
+              const SizedBox(height: 12),
+              GenerationGenderCard(metrics: data.generationMetrics),
+            ],
+            const SizedBox(height: 24),
+          ],
 
           // Priority Students
           _PriorityStudentsSection(students: data.priorityStudents),
 
           const SizedBox(height: 12),
-          ProfileAttendanceChart(metrics: data.profileMetrics),
-          const SizedBox(height: 12),
-          const AcademicRadarChart(),
-          const SizedBox(height: 12),
-          const ModelQualityCard(),
+          if (status?.state == TutorState.modelReady) ...[
+            ProfileAttendanceChart(metrics: data.profileMetrics),
+            const SizedBox(height: 12),
+            const AcademicRadarChart(),
+            const SizedBox(height: 12),
+            const ModelQualityCard(),
+          ],
           const SizedBox(height: 40),
         ],
       ),
@@ -157,9 +166,9 @@ class SegmentationDashboardView extends StatelessWidget {
   Future<void> _refresh(BuildContext context) {
     final auth = context.read<AuthProvider>();
     return context.read<SegmentationProvider>().load(
-          role: auth.user?.role,
-          userId: auth.user?.id,
-        );
+      role: auth.user?.role,
+      userId: auth.user?.id,
+    );
   }
 
   Widget _buildStatusView(BuildContext context, TutorStatusEntity status) {
@@ -177,14 +186,18 @@ class SegmentationDashboardView extends StatelessWidget {
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Icon(icon,
-                size: 64, color: theme.colorScheme.primary.withValues(alpha: 0.5)),
+            Icon(
+              icon,
+              size: 64,
+              color: theme.colorScheme.primary.withValues(alpha: 0.5),
+            ),
             const SizedBox(height: 24),
             Text(
               status.displayMessage,
               textAlign: TextAlign.center,
-              style: theme.textTheme.titleMedium
-                  ?.copyWith(fontWeight: FontWeight.bold),
+              style: theme.textTheme.titleMedium?.copyWith(
+                fontWeight: FontWeight.bold,
+              ),
             ),
             const SizedBox(height: 12),
             if (status.state == TutorState.hasStudents)
@@ -198,7 +211,7 @@ class SegmentationDashboardView extends StatelessWidget {
               onPressed: () => _refresh(context),
               icon: const Icon(Icons.refresh_rounded),
               label: const Text('Verificar de nuevo'),
-            )
+            ),
           ],
         ),
       ),
@@ -215,42 +228,70 @@ class _SummaryGrid extends StatelessWidget {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
 
-    return LayoutBuilder(builder: (context, constraints) {
-      final double spacing = 12.0;
-      final double itemWidth = (constraints.maxWidth - spacing) / 2;
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final double spacing = 12.0;
+        final double itemWidth = (constraints.maxWidth - spacing) / 2;
 
-      return Column(
-        children: [
-          Row(
-            children: [
-              _buildItem(itemWidth, 'Activos', data.activeCount,
-                  'Alumnos inscritos', Icons.person_search_rounded,
-                  theme.colorScheme.primary),
-              SizedBox(width: spacing),
-              _buildItem(itemWidth, 'Egresados', data.alumniCount,
-                  'Carrera terminada', Icons.school_rounded,
-                  appColors.profileAtypical),
-            ],
-          ),
-          SizedBox(height: spacing),
-          Row(
-            children: [
-              _buildItem(itemWidth, 'Seguimiento', data.urgentTrackingCount,
-                  'Atención urgente', Icons.warning_amber_rounded,
-                  appColors.profileCritical),
-              SizedBox(width: spacing),
-              _buildItem(itemWidth, 'Generaciones', data.generationCount,
-                  'Cohortes activas', Icons.groups_2_rounded,
-                  appColors.profileModerateRisk),
-            ],
-          ),
-        ],
-      );
-    });
+        return Column(
+          children: [
+            Row(
+              children: [
+                _buildItem(
+                  itemWidth,
+                  'Activos',
+                  data.activeCount,
+                  'Alumnos inscritos',
+                  Icons.person_search_rounded,
+                  theme.colorScheme.primary,
+                ),
+                SizedBox(width: spacing),
+                _buildItem(
+                  itemWidth,
+                  'Egresados',
+                  data.alumniCount,
+                  'Carrera terminada',
+                  Icons.school_rounded,
+                  appColors.profileAtypical,
+                ),
+              ],
+            ),
+            SizedBox(height: spacing),
+            Row(
+              children: [
+                _buildItem(
+                  itemWidth,
+                  'Seguimiento',
+                  data.urgentTrackingCount,
+                  'Atención urgente',
+                  Icons.warning_amber_rounded,
+                  appColors.profileCritical,
+                ),
+                SizedBox(width: spacing),
+                _buildItem(
+                  itemWidth,
+                  'Generaciones',
+                  data.generationCount,
+                  'Cohortes activas',
+                  Icons.groups_2_rounded,
+                  appColors.profileModerateRisk,
+                ),
+              ],
+            ),
+          ],
+        );
+      },
+    );
   }
 
-  Widget _buildItem(double width, String label, int count, String desc,
-      IconData icon, Color color) {
+  Widget _buildItem(
+    double width,
+    String label,
+    int count,
+    String desc,
+    IconData icon,
+    Color color,
+  ) {
     return SizedBox(
       width: width,
       child: StudentSummaryCard(
@@ -288,11 +329,15 @@ class _PriorityStudentsSection extends StatelessWidget {
             children: [
               Text(
                 'Alumnos prioritarios',
-                style: theme.textTheme.titleMedium
-                    ?.copyWith(fontWeight: FontWeight.bold),
+                style: theme.textTheme.titleMedium?.copyWith(
+                  fontWeight: FontWeight.bold,
+                ),
               ),
-              const Icon(Icons.priority_high_rounded,
-                  color: Colors.orange, size: 20),
+              const Icon(
+                Icons.priority_high_rounded,
+                color: Colors.orange,
+                size: 20,
+              ),
             ],
           ),
           const SizedBox(height: 16),
@@ -300,8 +345,11 @@ class _PriorityStudentsSection extends StatelessWidget {
             const Padding(
               padding: EdgeInsets.symmetric(vertical: 20),
               child: Center(
-                  child:
-                      Text('No hay alumnos prioritarios.', style: TextStyle(fontSize: 12))),
+                child: Text(
+                  'No hay alumnos prioritarios.',
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
             )
           else
             ...students.map((s) => _PriorityStudentTile(student: s)),
@@ -333,9 +381,10 @@ class _PriorityStudentTile extends StatelessWidget {
               child: Text(
                 initials,
                 style: TextStyle(
-                    fontSize: 10,
-                    fontWeight: FontWeight.bold,
-                    color: theme.colorScheme.primary),
+                  fontSize: 10,
+                  fontWeight: FontWeight.bold,
+                  color: theme.colorScheme.primary,
+                ),
               ),
             ),
             const SizedBox(width: 12),
@@ -345,8 +394,10 @@ class _PriorityStudentTile extends StatelessWidget {
                 children: [
                   Text(
                     student.name,
-                    style:
-                        const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                    style: const TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 12,
+                    ),
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                   ),
@@ -365,22 +416,28 @@ class _PriorityStudentTile extends StatelessWidget {
               children: [
                 Text(
                   '${student.averageGrade.toStringAsFixed(1)}',
-                  style:
-                      const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 12,
+                  ),
                 ),
                 if (student.delayedSubjects > 0)
                   Text(
                     '${student.delayedSubjects.round()} deudas',
                     style: TextStyle(
-                        fontSize: 9,
-                        color: appColors.profileCritical,
-                        fontWeight: FontWeight.bold),
+                      fontSize: 9,
+                      color: appColors.profileCritical,
+                      fontWeight: FontWeight.bold,
+                    ),
                   ),
               ],
             ),
             const SizedBox(width: 8),
-            Icon(Icons.chevron_right_rounded,
-                size: 16, color: appColors.cardBorder),
+            Icon(
+              Icons.chevron_right_rounded,
+              size: 16,
+              color: appColors.cardBorder,
+            ),
           ],
         ),
       ),

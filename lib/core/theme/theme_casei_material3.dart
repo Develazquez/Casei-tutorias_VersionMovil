@@ -323,9 +323,9 @@ class MaterialTheme {
   /// Extra semantic colors for CASEI-specific UI elements.
   ///
   /// Usage:
-  /// final colors = Theme.of(context).extension<AppThemeColors>()!;
-  /// colors.profileRegular
-  /// colors.profileCriticalContainer
+  /// `final colors = Theme.of(context).extension<AppThemeColors>()!;`
+  /// `colors.profileRegular`
+  /// `colors.profileCriticalContainer`
   List<ExtendedColor> get extendedColors => [
         ExtendedColor(
           seed: AppThemeColors.light.profileRegular,

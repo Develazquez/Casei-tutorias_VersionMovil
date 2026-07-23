@@ -23,15 +23,7 @@ class _RegisterPageState extends State<RegisterPage> {
 
   bool _obscurePassword = true;
   bool _obscureConfirmPassword = true;
-  String _role = 'tutor';
   String? _localError;
-
-  static const _roles = {
-    'director': 'Director',
-    'tutor': 'Tutor',
-    'docente': 'Docente',
-    'alumno': 'Alumno',
-  };
 
   @override
   void dispose() {
@@ -108,34 +100,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     keyboardType: TextInputType.phone,
                   ),
                   const SizedBox(height: 12),
-                  DropdownButtonFormField<String>(
-                    initialValue: _role,
-                    decoration: const InputDecoration(
-                      labelText: 'Rol institucional',
-                      prefixIcon: Icon(Icons.admin_panel_settings_outlined),
-                      border: OutlineInputBorder(),
+                  const ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    leading: Icon(Icons.supervisor_account_outlined),
+                    title: Text('Cuenta de tutor'),
+                    subtitle: Text(
+                      'El acceso móvil se valida con el rol institucional asignado en CACEI.',
                     ),
-                    items: _roles.entries
-                        .map(
-                          (entry) => DropdownMenuItem(
-                            value: entry.key,
-                            child: Text(entry.value),
-                          ),
-                        )
-                        .toList(),
-                    onChanged: isLoading
-                        ? null
-                        : (value) => setState(() => _role = value ?? _role),
                   ),
-                  if (_role == 'alumno') ...[
-                    const SizedBox(height: 10),
-                    Text(
-                      'Los alumnos se importan desde el panel del Director en CACEI.',
-                      style: TextStyle(
-                        color: Theme.of(context).colorScheme.error,
-                      ),
-                    ),
-                  ],
                   const SizedBox(height: 12),
                   AuthTextField(
                     controller: _passwordController,
@@ -166,8 +138,10 @@ class _RegisterPageState extends State<RegisterPage> {
                             : Icons.visibility_outlined,
                       ),
                       onPressed: () {
-                        setState(() => _obscureConfirmPassword =
-                            !_obscureConfirmPassword);
+                        setState(
+                          () => _obscureConfirmPassword =
+                              !_obscureConfirmPassword,
+                        );
                       },
                     ),
                   ),
@@ -260,7 +234,7 @@ class _RegisterPageState extends State<RegisterPage> {
       password: password,
       nombre: nombre,
       apellidos: apellidos,
-      role: _role,
+      role: 'tutor',
       telefono: telefono,
     );
 

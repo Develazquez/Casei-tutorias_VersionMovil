@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
+import '../../../../navigation/app_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../tutor_navigation/presentation/components/tutor_navigation_drawer.dart';
 import '../components/dashboard/segmentation_dashboard_header.dart';
 import '../components/dashboard/segmentation_dashboard_view.dart';
-import '../components/model/segmentation_model_view.dart';
 import '../components/search/segmentation_search_view.dart';
-import '../components/tutorados/tutorados_view.dart';
 import '../providers/segmentation_dashboard_provider.dart';
 import '../providers/segmentation_navigation_provider.dart';
 import '../providers/segmentation_provider.dart';
@@ -27,13 +26,26 @@ class _SegmentationDashboardV2PageState
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      final auth = context.read<AuthProvider>();
-      context.read<SegmentationProvider>().load(
-        role: auth.user?.role,
-        userId: auth.user?.id,
+    WidgetsBinding.instance.addPostFrameCallback((_) => _initialize());
+  }
+
+  Future<void> _initialize() async {
+    final auth = context.read<AuthProvider>();
+    if (auth.user?.isTutor != true) {
+      await auth.logout();
+      if (!mounted) return;
+      Navigator.pushNamedAndRemoveUntil(
+        context,
+        AppScreen.login.route,
+        (route) => false,
       );
-    });
+      return;
+    }
+
+    await context.read<SegmentationProvider>().load(
+      role: auth.user!.role,
+      userId: auth.user!.id,
+    );
   }
 
   @override
@@ -45,6 +57,12 @@ class _SegmentationDashboardV2PageState
       builder: (context, dashboardProvider, navigationProvider, child) {
         final auth = context.watch<AuthProvider>();
         final theme = Theme.of(context);
+
+        if (auth.user?.isTutor != true) {
+          return const Scaffold(
+            body: Center(child: CircularProgressIndicator()),
+          );
+        }
 
         return Scaffold(
           key: _scaffoldKey,
@@ -64,9 +82,7 @@ class _SegmentationDashboardV2PageState
                     index: navigationProvider.currentTabIndex,
                     children: const [
                       SegmentationDashboardView(),
-                      SegmentationModelView(),
                       SegmentationSearchView(),
-                      TutoradosView(),
                     ],
                   ),
                 ),

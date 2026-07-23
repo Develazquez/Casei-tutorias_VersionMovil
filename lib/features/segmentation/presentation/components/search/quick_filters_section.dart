@@ -80,33 +80,35 @@ class QuickFiltersSection extends StatelessWidget {
             _FilterChip(
               label: 'Egresados',
               color: Colors.blueGrey,
-              isSelected: false,
-              onTap: () {},
+              isSelected: viewModel.query.alumniOnly,
+              onTap: viewModel.toggleAlumni,
             ),
           ],
         ),
-        const SizedBox(height: 16),
-        Text(
-          'Generaciones',
-          style: TextStyle(
-            fontSize: 12,
-            fontWeight: FontWeight.bold,
-            color: appColors.mutedText,
+        if (viewModel.generations.isNotEmpty) ...[
+          const SizedBox(height: 16),
+          Text(
+            'Generaciones',
+            style: TextStyle(
+              fontSize: 12,
+              fontWeight: FontWeight.bold,
+              color: appColors.mutedText,
+            ),
           ),
-        ),
-        const SizedBox(height: 8),
-        Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: ['2021', '2022', '2023', '2024'].map((gen) {
-            return _FilterChip(
-              label: 'Gen. $gen',
-              color: appColors.info,
-              isSelected: viewModel.query.generations.contains(gen),
-              onTap: () => viewModel.toggleGeneration(gen),
-            );
-          }).toList(),
-        ),
+          const SizedBox(height: 8),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: viewModel.generations.map((gen) {
+              return _FilterChip(
+                label: 'Gen. $gen',
+                color: appColors.info,
+                isSelected: viewModel.query.generations.contains(gen),
+                onTap: () => viewModel.toggleGeneration(gen),
+              );
+            }).toList(),
+          ),
+        ],
       ],
     );
   }

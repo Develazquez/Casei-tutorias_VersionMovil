@@ -60,33 +60,11 @@ class SegmentationDashboardHeader extends StatelessWidget {
                     ),
                     const Text(
                       'Tutor · CACEI',
-                      style: TextStyle(
-                        color: Colors.white70,
-                        fontSize: 12,
-                      ),
+                      style: TextStyle(color: Colors.white70, fontSize: 12),
                     ),
                   ],
                 ),
               ),
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.1),
-                  borderRadius: BorderRadius.circular(20),
-                  border: Border.all(color: Colors.white24),
-                ),
-                child: const Row(
-                  children: [
-                    Icon(Icons.bolt, color: Colors.amber, size: 14),
-                    SizedBox(width: 4),
-                    Text(
-                      'K-Means K=3 · pca_90',
-                      style: TextStyle(color: Colors.white, fontSize: 10),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(width: 8),
               const Icon(
                 Icons.notifications_none_rounded,
                 color: Colors.white,
@@ -127,22 +105,10 @@ class _DashboardTabs extends StatelessWidget {
             onTap: () => onTabChanged(0),
           ),
           _TabItem(
-            label: 'Modelo',
-            icon: Icons.account_tree_outlined,
-            isActive: currentIndex == 1,
-            onTap: () => onTabChanged(1),
-          ),
-          _TabItem(
             label: 'Búsqueda',
             icon: Icons.search_rounded,
-            isActive: currentIndex == 2,
-            onTap: () => onTabChanged(2),
-          ),
-          _TabItem(
-            label: 'Alumnos',
-            icon: Icons.people_outline_rounded,
-            isActive: currentIndex == 3,
-            onTap: () => onTabChanged(3),
+            isActive: currentIndex == 1,
+            onTap: () => onTabChanged(1),
           ),
         ],
       ),
@@ -167,7 +133,7 @@ class _TabItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
     final appColors = theme.extension<AppThemeColors>()!;
-    
+
     return InkWell(
       onTap: onTap,
       child: Container(
@@ -175,9 +141,7 @@ class _TabItem extends StatelessWidget {
         decoration: BoxDecoration(
           border: Border(
             bottom: BorderSide(
-              color: isActive
-                  ? appColors.sidebarSelected
-                  : Colors.transparent,
+              color: isActive ? appColors.sidebarSelected : Colors.transparent,
               width: 3,
             ),
           ),

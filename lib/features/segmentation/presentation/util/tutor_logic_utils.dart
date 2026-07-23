@@ -47,15 +47,22 @@ abstract final class TutorLogicUtils {
   static String normalizeProfileLabel(String label) {
     final l = label.toLowerCase();
     if (l.contains('regular')) return 'Regular / seguimiento preventivo';
-    if (l.contains('atípico') || l.contains('atipico')) return 'Atípico / buen promedio con baja asistencia';
-    if (l.contains('crítico') || l.contains('critico')) return 'Crítico / rezago alto';
-    if (l.contains('riesgo') || l.contains('moderado')) return 'Riesgo académico moderado';
+    if (l.contains('atípico') || l.contains('atipico')) {
+      return 'Atípico / buen promedio con baja asistencia';
+    }
+    if (l.contains('crítico') || l.contains('critico')) {
+      return 'Crítico / rezago alto';
+    }
+    if (l.contains('riesgo') || l.contains('moderado')) {
+      return 'Riesgo académico moderado';
+    }
     return label;
   }
 
   static bool isUrgentTracking(SegmentationStudentEntity student) {
     final profile = normalizeProfileLabel(student.profileLabel);
-    final isCriticalOrRisk = profile.contains('Crítico') || profile.contains('Riesgo');
+    final isCriticalOrRisk =
+        profile.contains('Crítico') || profile.contains('Riesgo');
     final lowAttendance = student.attendanceRate < 75;
     final manyDebts = student.delayedSubjects >= 3;
 
@@ -70,17 +77,15 @@ abstract final class TutorLogicUtils {
     return student.attendanceRate < 60;
   }
 
-  /// Fallback for gender estimation if backend doesn't provide it.
   static String getStudentGender(SegmentationStudentEntity student) {
-    if (student.gender != null) return student.gender!;
-    
-    if (student.name.trim().isEmpty) return 'Hombre';
-    final namePart = student.name.trim().split(' ').first;
-    final lastChar = namePart.toLowerCase()[namePart.length - 1];
-    if (['a', 'e', 'i', 'x'].contains(lastChar)) {
+    final value = student.gender?.trim().toLowerCase();
+    if (value == 'm' || value == 'hombre' || value == 'male') {
+      return 'Hombre';
+    }
+    if (value == 'f' || value == 'mujer' || value == 'female') {
       return 'Mujer';
     }
-    return 'Hombre';
+    return 'Sin dato';
   }
 
   static List<String> getInitials(String name) {
@@ -100,10 +105,10 @@ abstract final class TutorLogicUtils {
       final cohortYear = int.parse(student.cohort);
       final currentYear = DateTime.now().year;
       final currentMonth = DateTime.now().month;
-      
+
       int diffYears = currentYear - cohortYear;
       int terms = diffYears * 3;
-      
+
       if (currentMonth >= 1 && currentMonth <= 4) {
         terms += 1;
       } else if (currentMonth >= 5 && currentMonth <= 8) {

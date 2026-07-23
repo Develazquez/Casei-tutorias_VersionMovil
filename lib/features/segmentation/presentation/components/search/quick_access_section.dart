@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+
 import '../../../../../core/theme/theme_casei_material3.dart';
+import '../../providers/segmentation_search_provider.dart';
 
 class QuickAccessSection extends StatelessWidget {
   const QuickAccessSection({super.key});
@@ -93,11 +96,8 @@ class _QuickAccessCard extends StatelessWidget {
     final appColors = theme.extension<AppThemeColors>()!;
 
     return InkWell(
-      onTap: () {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Ejecutando consulta inteligente...')),
-        );
-      },
+      onTap: () =>
+          context.read<SegmentationSearchProvider>().submitQuery(title),
       borderRadius: BorderRadius.circular(16),
       child: Container(
         padding: const EdgeInsets.all(12),

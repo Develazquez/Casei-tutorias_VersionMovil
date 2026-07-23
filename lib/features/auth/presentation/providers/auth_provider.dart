@@ -27,6 +27,8 @@ class AuthProvider extends ChangeNotifier {
   final GetCurrentUserUseCase _getCurrentUserUseCase;
   StreamSubscription<bool>? _authStateSubscription;
   static const _authTimeout = Duration(seconds: 15);
+  static const _tutorOnlyMessage =
+      'La aplicación móvil está disponible únicamente para tutores.';
 
   ViewState _state = ViewState.idle;
   String? _errorMessage;
@@ -54,8 +56,15 @@ class AuthProvider extends ChangeNotifier {
     _errorMessage = null;
     notifyListeners();
     try {
-      _user = await _getCurrentUserUseCase().timeout(_authTimeout);
-      _state = _user == null ? ViewState.idle : ViewState.success;
+      final restoredUser = await _getCurrentUserUseCase().timeout(_authTimeout);
+      if (restoredUser != null && !restoredUser.isTutor) {
+        await _clearUnsupportedSession();
+        _errorMessage = _tutorOnlyMessage;
+        _state = ViewState.idle;
+      } else {
+        _user = restoredUser;
+        _state = _user == null ? ViewState.idle : ViewState.success;
+      }
     } on TimeoutException {
       _user = null;
       _errorMessage = 'La sesión tardó demasiado en restaurarse.';
@@ -75,10 +84,18 @@ class AuthProvider extends ChangeNotifier {
     _emailConfirmationPending = false;
     notifyListeners();
     try {
-      _user = await _loginUseCase(
+      final loggedInUser = await _loginUseCase(
         email: email,
         password: password,
       ).timeout(_authTimeout);
+      if (!loggedInUser.isTutor) {
+        await _clearUnsupportedSession();
+        _errorMessage = _tutorOnlyMessage;
+        _state = ViewState.error;
+        notifyListeners();
+        return false;
+      }
+      _user = loggedInUser;
       _state = ViewState.success;
       notifyListeners();
       return true;
@@ -115,7 +132,7 @@ class AuthProvider extends ChangeNotifier {
     _emailConfirmationPending = false;
     notifyListeners();
     try {
-      _user = await _registerUseCase(
+      final registeredUser = await _registerUseCase(
         email: email,
         password: password,
         nombre: nombre,
@@ -123,6 +140,14 @@ class AuthProvider extends ChangeNotifier {
         role: role,
         telefono: telefono,
       ).timeout(_authTimeout);
+      if (!registeredUser.isTutor) {
+        await _clearUnsupportedSession();
+        _errorMessage = _tutorOnlyMessage;
+        _state = ViewState.error;
+        notifyListeners();
+        return false;
+      }
+      _user = registeredUser;
       _state = ViewState.success;
       notifyListeners();
       return true;
@@ -163,6 +188,15 @@ class AuthProvider extends ChangeNotifier {
     _emailConfirmationPending = false;
     _state = ViewState.idle;
     notifyListeners();
+  }
+
+  Future<void> _clearUnsupportedSession() async {
+    try {
+      await _logoutUseCase().timeout(_authTimeout);
+    } catch (_) {
+      // Provider state is still cleared when remote sign-out is unavailable.
+    }
+    _user = null;
   }
 
   Future<void> _onAuthStateChanged(bool signedIn) async {

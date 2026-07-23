@@ -26,7 +26,7 @@ class _AuthCheckerState extends State<AuthChecker> {
     if (!mounted) return;
     Navigator.pushReplacementNamed(
       context,
-      auth.isAuthenticated
+      auth.isAuthenticated && auth.user?.isTutor == true
           ? AppScreen.segmentation.route
           : AppScreen.login.route,
     );

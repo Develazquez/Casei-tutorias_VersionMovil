@@ -22,8 +22,6 @@ class SecurityShell extends StatelessWidget {
     final isAuthenticated = context.select<AuthProvider, bool>(
       (auth) => auth.isAuthenticated,
     );
-    final fakeGpsGuardEnabled =
-        isAuthenticated && AppConstants.enableFakeGpsGuard;
     final raspGuardEnabled = isAuthenticated && AppConstants.enableRaspGuard;
     final inactivityTimeoutEnabled =
         isAuthenticated && AppConstants.enableInactivitySessionTimeout;

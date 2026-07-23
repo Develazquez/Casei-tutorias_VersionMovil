@@ -20,7 +20,7 @@ class AuthSupabaseDataSource {
   final TokenStorage _tokenStorage;
   final FirebaseMessagingService _messagingService;
   static const _networkTimeout = Duration(seconds: 12);
-  static const _supportedRoles = {'director', 'tutor', 'docente', 'alumno'};
+  static const _mobileRole = 'tutor';
 
   Stream<bool> watchSignedIn() {
     return _client.auth.onAuthStateChange
@@ -52,6 +52,9 @@ class AuthSupabaseDataSource {
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
+    } on AuthException {
+      await _discardUnauthorizedSession();
+      rethrow;
     } on supabase.AuthException catch (e) {
       throw AuthException(AuthErrorMapper.map(e.message));
     } on supabase.PostgrestException catch (e) {
@@ -69,12 +72,9 @@ class AuthSupabaseDataSource {
     required String role,
     String? telefono,
   }) async {
-    if (!_supportedRoles.contains(role)) {
-      throw const ValidationException('El rol seleccionado no es válido.');
-    }
-    if (role == 'alumno') {
+    if (role.trim().toLowerCase() != _mobileRole) {
       throw const ValidationException(
-        'Los alumnos no pueden registrarse directamente. Deben ser importados por el Director.',
+        'La aplicación móvil está disponible únicamente para tutores.',
       );
     }
 
@@ -88,7 +88,7 @@ class AuthSupabaseDataSource {
               'nombre': nombre.trim(),
               'apellidos': apellidos.trim(),
               'telefono': _emptyToNull(telefono),
-              'rol': role,
+              'rol': _mobileRole,
               'activo': true,
             },
           )
@@ -116,6 +116,9 @@ class AuthSupabaseDataSource {
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
+    } on AuthException {
+      await _discardUnauthorizedSession();
+      rethrow;
     } on supabase.AuthException catch (e) {
       throw AuthException(AuthErrorMapper.map(e.message));
     } on supabase.PostgrestException catch (e) {
@@ -140,6 +143,9 @@ class AuthSupabaseDataSource {
       await _tokenStorage.saveSession(token: dto.token, role: dto.role);
       unawaited(_messagingService.registerCurrentDevice());
       return dto;
+    } on AuthException {
+      await _discardUnauthorizedSession();
+      return null;
     } on supabase.PostgrestException {
       return null;
     } on TimeoutException {
@@ -164,29 +170,9 @@ class AuthSupabaseDataSource {
       return Map<String, dynamic>.from(profile);
     }
 
-    final metadata = user.userMetadata ?? const <String, dynamic>{};
-    final metadataRole = metadata['rol']?.toString() ?? '';
-    final role =
-        _supportedRoles.contains(metadataRole) && metadataRole != 'alumno'
-        ? metadataRole
-        : 'tutor';
-
-    final createdProfile = await _client
-        .from('profiles')
-        .upsert({
-          'id': user.id,
-          'email': user.email ?? '',
-          'nombre': metadata['nombre']?.toString().trim() ?? '',
-          'apellidos': metadata['apellidos']?.toString().trim() ?? '',
-          'telefono': _emptyToNull(metadata['telefono']?.toString()),
-          'rol': role,
-          'activo': true,
-        })
-        .select('id, nombre, apellidos, email, rol, telefono, activo')
-        .single()
-        .timeout(_networkTimeout);
-
-    return Map<String, dynamic>.from(createdProfile);
+    throw const AuthException(
+      'Tu cuenta no tiene un perfil institucional válido en CACEI.',
+    );
   }
 
   UserDto _dtoFromProfile(
@@ -194,6 +180,19 @@ class AuthSupabaseDataSource {
     required String token,
     required String fallbackEmail,
   }) {
+    final role = profile['rol']?.toString().trim().toLowerCase() ?? '';
+    final isActive = profile['activo'] == true;
+    if (!isActive) {
+      throw const AuthException(
+        'Tu cuenta institucional está inactiva. Contacta al administrador.',
+      );
+    }
+    if (role != _mobileRole) {
+      throw const AuthException(
+        'La aplicación móvil está disponible únicamente para tutores.',
+      );
+    }
+
     final nombre = profile['nombre']?.toString().trim() ?? '';
     final apellidos = profile['apellidos']?.toString().trim() ?? '';
     final fullName = [nombre, apellidos].where((value) => value.isNotEmpty);
@@ -202,9 +201,18 @@ class AuthSupabaseDataSource {
       id: profile['id'].toString(),
       name: fullName.join(' ').trim(),
       email: profile['email']?.toString() ?? fallbackEmail,
-      role: profile['rol']?.toString() ?? 'tutor',
+      role: role,
       token: token,
     );
+  }
+
+  Future<void> _discardUnauthorizedSession() async {
+    try {
+      await _client.auth.signOut().timeout(_networkTimeout);
+    } catch (_) {
+      // The local credential is cleared even when remote sign-out is unavailable.
+    }
+    await _tokenStorage.clear();
   }
 
   String? _emptyToNull(String? value) {

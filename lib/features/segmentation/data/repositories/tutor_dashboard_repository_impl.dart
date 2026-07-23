@@ -16,28 +16,24 @@ class TutorDashboardRepositoryImpl implements TutorDashboardRepository {
 
   @override
   Future<TutorStatusEntity> getTutorStatus(String userId) async {
-    // 1. Check groups
+    // Active scope is authoritative. Direct group ownership is only a fallback
+    // for installations that have not populated tutor_student_scope yet.
+    var studentCount = await _supabaseDataSource.getTutorStudentScopeCount(
+      userId,
+    );
     final groupIds = await _supabaseDataSource.getTutorGroupIds(userId);
-    if (groupIds.isEmpty) {
-      return const TutorStatusEntity(state: TutorState.noGroup);
-    }
 
-    // 2. Check scope
-    var studentCount = await _supabaseDataSource.getTutorStudentScopeCount(userId);
-    
-    // 3. Fallback to carga_academica
     if (studentCount == 0) {
+      if (groupIds.isEmpty) {
+        return const TutorStatusEntity(state: TutorState.noGroup);
+      }
       studentCount = await _supabaseDataSource.getCargaAcademicaCount(groupIds);
     }
 
     if (studentCount == 0) {
-      return TutorStatusEntity(
-        state: TutorState.noData,
-        groupIds: groupIds,
-      );
+      return TutorStatusEntity(state: TutorState.noData, groupIds: groupIds);
     }
 
-    // 4. Check segmentation results (MODEL_READY)
     try {
       final summary = await _remoteDataSource.getSummary(userId: userId);
       if (summary.totalStudents > 0) {
@@ -48,7 +44,7 @@ class TutorDashboardRepositoryImpl implements TutorDashboardRepository {
         );
       }
     } catch (_) {
-      // If summary fails or returns 0, it might be HAS_STUDENTS
+      // Institutional data may exist before a segmentation run is published.
     }
 
     return TutorStatusEntity(
@@ -59,7 +55,9 @@ class TutorDashboardRepositoryImpl implements TutorDashboardRepository {
   }
 
   @override
-  Future<List<SegmentationStudentEntity>> getTutorStudents(String userId) async {
+  Future<List<SegmentationStudentEntity>> getTutorStudents(
+    String userId,
+  ) async {
     final dtos = await _remoteDataSource.getStudents(userId: userId);
     return dtos.map((dto) => dto.toEntity()).toList();
   }
@@ -71,8 +69,14 @@ class TutorDashboardRepositoryImpl implements TutorDashboardRepository {
   }
 
   @override
-  Future<List<SegmentationStudentEntity>> searchTutorStudents(String userId, String query) async {
-    final dtos = await _remoteDataSource.searchStudents(userId: userId, query: query);
+  Future<List<SegmentationStudentEntity>> searchTutorStudents(
+    String userId,
+    String query,
+  ) async {
+    final dtos = await _remoteDataSource.searchStudents(
+      userId: userId,
+      query: query,
+    );
     return dtos.map((dto) => dto.toEntity()).toList();
   }
 }

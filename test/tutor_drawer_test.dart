@@ -13,12 +13,16 @@ import 'package:casei_tutorias/features/segmentation/presentation/providers/segm
 import 'package:casei_tutorias/features/segmentation/presentation/providers/segmentation_provider.dart';
 import 'package:casei_tutorias/features/tutor_navigation/presentation/providers/tutor_navigation_provider.dart';
 import 'package:casei_tutorias/features/segmentation/domain/repositories/segmentation_repository.dart';
-import 'package:casei_tutorias/features/segmentation/domain/usecases/get_dashboard_summary_usecase.dart';
+import 'package:casei_tutorias/features/segmentation/domain/repositories/tutor_dashboard_repository.dart';
 import 'package:casei_tutorias/features/segmentation/domain/usecases/get_segmentation_model_artifacts_usecase.dart';
-import 'package:casei_tutorias/features/segmentation/domain/usecases/get_segmentation_students_usecase.dart';
+import 'package:casei_tutorias/features/segmentation/domain/usecases/get_tutor_status_usecase.dart';
+import 'package:casei_tutorias/features/segmentation/domain/usecases/get_tutor_students_usecase.dart';
+import 'package:casei_tutorias/features/segmentation/domain/usecases/get_tutor_summary_usecase.dart';
+import 'package:casei_tutorias/features/segmentation/domain/usecases/search_tutor_students_usecase.dart';
 import 'package:casei_tutorias/features/segmentation/domain/entities/dashboard_summary_entity.dart';
 import 'package:casei_tutorias/features/segmentation/domain/entities/segmentation_model_artifacts_entity.dart';
 import 'package:casei_tutorias/features/segmentation/domain/entities/segmentation_student_entity.dart';
+import 'package:casei_tutorias/features/segmentation/domain/entities/tutor_status_entity.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,43 +44,63 @@ void main() {
 
     final authRepo = _FakeAuthRepository();
     final segRepo = _FakeSegmentationRepository();
+    final tutorRepo = _FakeTutorDashboardRepository();
+    final authProvider = AuthProvider(
+      LoginUseCase(authRepo),
+      RegisterUseCase(authRepo),
+      LogoutUseCase(authRepo),
+      GetCurrentUserUseCase(authRepo),
+    );
+    await authProvider.restoreSession();
+    addTearDown(authProvider.dispose);
 
     await tester.pumpWidget(
       MultiProvider(
         providers: [
-          ChangeNotifierProvider(
-            create: (_) => AuthProvider(
-              LoginUseCase(authRepo),
-              RegisterUseCase(authRepo),
-              LogoutUseCase(authRepo),
-              GetCurrentUserUseCase(authRepo),
-            )..restoreSession(),
-          ),
+          ChangeNotifierProvider.value(value: authProvider),
           ChangeNotifierProvider(
             create: (_) => SegmentationProvider(
-              GetDashboardSummaryUseCase(segRepo),
-              GetSegmentationStudentsUseCase(segRepo),
+              GetTutorStatusUseCase(tutorRepo),
+              GetTutorStudentsUseCase(tutorRepo),
+              GetTutorSummaryUseCase(tutorRepo),
+              SearchTutorStudentsUseCase(tutorRepo),
               GetSegmentationModelArtifactsUseCase(segRepo),
             ),
           ),
-          ChangeNotifierProxyProvider<SegmentationProvider, SegmentationDashboardProvider>(
+          ChangeNotifierProxyProvider<
+            SegmentationProvider,
+            SegmentationDashboardProvider
+          >(
             create: (context) => SegmentationDashboardProvider(
               context.read<SegmentationProvider>(),
             ),
-            update: (context, source, previous) => SegmentationDashboardProvider(source),
+            update: (context, source, previous) =>
+                SegmentationDashboardProvider(source),
           ),
-          ChangeNotifierProvider(create: (_) => SegmentationNavigationProvider()),
-          ChangeNotifierProxyProvider<SegmentationProvider, SegmentationModelProvider>(
-            create: (context) => SegmentationModelProvider(
-              context.read<SegmentationProvider>(),
-            ),
-            update: (context, source, previous) => SegmentationModelProvider(source),
+          ChangeNotifierProvider(
+            create: (_) => SegmentationNavigationProvider(),
           ),
-          ChangeNotifierProxyProvider<SegmentationProvider, SegmentationSearchProvider>(
+          ChangeNotifierProxyProvider<
+            SegmentationProvider,
+            SegmentationModelProvider
+          >(
+            create: (context) =>
+                SegmentationModelProvider(context.read<SegmentationProvider>()),
+            update: (context, source, previous) =>
+                SegmentationModelProvider(source),
+          ),
+          ChangeNotifierProxyProvider<
+            SegmentationProvider,
+            SegmentationSearchProvider
+          >(
             create: (context) => SegmentationSearchProvider(
               context.read<SegmentationProvider>(),
+              context.read<AuthProvider>(),
             ),
-            update: (context, source, previous) => SegmentationSearchProvider(source),
+            update: (context, source, previous) => SegmentationSearchProvider(
+              source,
+              context.read<AuthProvider>(),
+            ),
           ),
           ChangeNotifierProvider(create: (_) => TutorNavigationProvider()),
         ],
@@ -96,7 +120,7 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(NavigationDrawer), findsOneWidget);
-    expect(find.textContaining('CACEI'), findsOneWidget);
+    expect(find.text('CACEI'), findsOneWidget);
 
     final closeButton = find.byTooltip('Cerrar menú de navegación');
     expect(closeButton, findsOneWidget);
@@ -162,4 +186,31 @@ class _FakeSegmentationRepository implements SegmentationRepository {
     String? program,
     String? query,
   }) async => [];
+}
+
+class _FakeTutorDashboardRepository implements TutorDashboardRepository {
+  @override
+  Future<TutorStatusEntity> getTutorStatus(String userId) async =>
+      const TutorStatusEntity(state: TutorState.modelReady, studentCount: 10);
+
+  @override
+  Future<List<SegmentationStudentEntity>> getTutorStudents(
+    String userId,
+  ) async => [];
+
+  @override
+  Future<DashboardSummaryEntity> getTutorSummary(String userId) async =>
+      const DashboardSummaryEntity(
+        totalStudents: 10,
+        averageGrade: 8.5,
+        attendanceRate: 90,
+        riskStudents: 2,
+        clusters: [],
+      );
+
+  @override
+  Future<List<SegmentationStudentEntity>> searchTutorStudents(
+    String userId,
+    String query,
+  ) async => [];
 }

@@ -34,8 +34,10 @@ class SegmentationDashboardProvider extends ChangeNotifier {
   void _processData() {
     final students = _sourceProvider.allTutorStudents;
     final status = _sourceProvider.tutorStatus;
-    
-    if (status == null || status.state == TutorState.noGroup || status.state == TutorState.noData) {
+
+    if (status == null ||
+        status.state == TutorState.noGroup ||
+        status.state == TutorState.noData) {
       _data = SegmentationDashboardData.empty;
       return;
     }
@@ -47,10 +49,14 @@ class SegmentationDashboardProvider extends ChangeNotifier {
     }
 
     // Summary Metrics
-    final activeCount = students.where((s) => s.academicStatus?.toLowerCase() != 'egresado').length;
+    final activeCount = students
+        .where((s) => s.academicStatus?.toLowerCase() != 'egresado')
+        .length;
     final alumniCount = students.length - activeCount;
-    
-    final urgentTracking = students.where((s) => TutorLogicUtils.isUrgentTracking(s)).length;
+
+    final urgentTracking = students
+        .where((s) => TutorLogicUtils.isUrgentTracking(s))
+        .length;
 
     final generationsSet = students.map((s) => s.cohort).toSet();
 
@@ -68,12 +74,16 @@ class SegmentationDashboardProvider extends ChangeNotifier {
         count: group.length,
         percentage: (group.length / total) * 100,
         averageGrade: _calculateAverage(group.map((e) => e.averageGrade)),
-        averageAttendance: _calculateAverage(group.map((e) => e.attendanceRate)),
+        averageAttendance: _calculateAverage(
+          group.map((e) => e.attendanceRate),
+        ),
         description: _getProfileDescription(entry.key),
       );
     }).toList();
 
-    profileMetrics.sort((a, b) => _labelPriority(b.label).compareTo(_labelPriority(a.label)));
+    profileMetrics.sort(
+      (a, b) => _labelPriority(b.label).compareTo(_labelPriority(a.label)),
+    );
 
     // Generation Metrics
     final generationGroups = <String, List<SegmentationStudentEntity>>{};
@@ -81,22 +91,40 @@ class SegmentationDashboardProvider extends ChangeNotifier {
       generationGroups.putIfAbsent(student.cohort, () => []).add(student);
     }
 
-    final generationMetrics = generationGroups.entries.map((entry) {
-      final group = entry.value;
-      final males = group.where((s) => TutorLogicUtils.getStudentGender(s) == 'Hombre').length;
-      final females = group.length - males;
-      return GenerationMetric(
-        generation: entry.key,
-        maleCount: males,
-        femaleCount: females,
-        totalCount: group.length,
-        students: group,
-      );
-    }).toList()..sort((a, b) => b.generation.compareTo(a.generation));
+    final generationMetrics =
+        generationGroups.entries
+            .map((entry) {
+              final group = entry.value;
+              final males = group
+                  .where((s) => TutorLogicUtils.getStudentGender(s) == 'Hombre')
+                  .length;
+              final females = group
+                  .where((s) => TutorLogicUtils.getStudentGender(s) == 'Mujer')
+                  .length;
+              final studentsWithGender = group
+                  .where(
+                    (s) => TutorLogicUtils.getStudentGender(s) != 'Sin dato',
+                  )
+                  .toList();
+              return GenerationMetric(
+                generation: entry.key,
+                maleCount: males,
+                femaleCount: females,
+                totalCount: studentsWithGender.length,
+                students: studentsWithGender,
+              );
+            })
+            .where((metric) => metric.totalCount > 0)
+            .toList()
+          ..sort((a, b) => b.generation.compareTo(a.generation));
 
     // Priority Students
     final priorityList = List<SegmentationStudentEntity>.from(students)
-      ..sort((a, b) => TutorLogicUtils.calculatePriorityScore(b).compareTo(TutorLogicUtils.calculatePriorityScore(a)));
+      ..sort(
+        (a, b) => TutorLogicUtils.calculatePriorityScore(
+          b,
+        ).compareTo(TutorLogicUtils.calculatePriorityScore(a)),
+      );
 
     _data = SegmentationDashboardData(
       activeCount: activeCount,
@@ -117,10 +145,18 @@ class SegmentationDashboardProvider extends ChangeNotifier {
   }
 
   String _getProfileDescription(String label) {
-    if (label.contains('Regular')) return 'Desempeño estable y asistencia constante.';
-    if (label.contains('Atípico')) return 'Buen promedio pero con baja asistencia.';
-    if (label.contains('Crítico')) return 'Riesgo alto de reprobación o rezago.';
-    if (label.contains('Riesgo')) return 'Requiere atención para evitar rezago.';
+    if (label.contains('Regular')) {
+      return 'Desempeño estable y asistencia constante.';
+    }
+    if (label.contains('Atípico')) {
+      return 'Buen promedio pero con baja asistencia.';
+    }
+    if (label.contains('Crítico')) {
+      return 'Riesgo alto de reprobación o rezago.';
+    }
+    if (label.contains('Riesgo')) {
+      return 'Requiere atención para evitar rezago.';
+    }
     return '';
   }
 

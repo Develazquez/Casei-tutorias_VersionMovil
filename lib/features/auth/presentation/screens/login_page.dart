@@ -51,7 +51,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
   Widget build(BuildContext context) {
     final auth = context.watch<AuthProvider>();
     final theme = Theme.of(context);
-    final appColors = theme.extension<AppThemeColors>()!;
+    final mutedText =
+        theme.extension<AppThemeColors>()?.mutedText ??
+        theme.colorScheme.onSurfaceVariant;
 
     return Scaffold(
       backgroundColor: theme.colorScheme.surface,
@@ -89,7 +91,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                         'Dashboard de segmentación académica',
                         textAlign: TextAlign.center,
                         style: theme.textTheme.bodyLarge?.copyWith(
-                          color: appColors.mutedText,
+                          color: mutedText,
                         ),
                       ),
                       const SizedBox(height: 32),
@@ -113,7 +115,9 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                 : Icons.visibility_outlined,
                           ),
                           onPressed: () {
-                            setState(() => _obscurePassword = !_obscurePassword);
+                            setState(
+                              () => _obscurePassword = !_obscurePassword,
+                            );
                           },
                         ),
                       ),
@@ -128,12 +132,20 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                   final password = _passwordController.text;
 
                                   if (email.isEmpty || password.isEmpty) {
-                                    setState(() => _localError = 'Por favor, ingresa tu correo y contraseña institucional.');
+                                    setState(
+                                      () => _localError =
+                                          'Por favor, ingresa tu correo y contraseña institucional.',
+                                    );
                                     return;
                                   }
 
-                                  if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(email)) {
-                                    setState(() => _localError = 'El formato del correo electrónico no es válido.');
+                                  if (!RegExp(
+                                    r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                                  ).hasMatch(email)) {
+                                    setState(
+                                      () => _localError =
+                                          'El formato del correo electrónico no es válido.',
+                                    );
                                     return;
                                   }
 
@@ -141,13 +153,17 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
 
                                   final ok = await context
                                       .read<AuthProvider>()
-                                      .login(
-                                        email: email,
-                                        password: password,
-                                      );
+                                      .login(email: email, password: password);
                                   if (!mounted || !ok) return;
                                   await Future<void>.delayed(Duration.zero);
                                   if (!mounted) return;
+                                  if (context
+                                          .read<AuthProvider>()
+                                          .user
+                                          ?.isTutor !=
+                                      true) {
+                                    return;
+                                  }
                                   Navigator.pushReplacementNamed(
                                     context,
                                     AppScreen.segmentation.route,

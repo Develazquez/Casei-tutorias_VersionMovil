@@ -21,20 +21,30 @@ class SegmentationSearchView extends StatelessWidget {
       children: [
         Text(
           'Búsqueda inteligente',
-          style: theme.textTheme.headlineSmall?.copyWith(fontWeight: FontWeight.bold),
+          style: theme.textTheme.headlineSmall?.copyWith(
+            fontWeight: FontWeight.bold,
+          ),
         ),
         Text(
           'Consulta y filtra la información de tus tutorados con criterios avanzados.',
-          style: TextStyle(
-            fontSize: 12,
-            color: appColors.mutedText,
-          ),
+          style: TextStyle(fontSize: 12, color: appColors.mutedText),
         ),
         const SizedBox(height: 24),
         TutorSearchBarCard(
           onChanged: provider.onTextChanged,
           onClear: provider.clearFilters,
         ),
+        if (provider.isRemoteSearching) ...[
+          const SizedBox(height: 8),
+          const LinearProgressIndicator(),
+        ],
+        if (provider.usingLocalFallback && provider.isSearching) ...[
+          const SizedBox(height: 8),
+          Text(
+            'El motor inteligente no está disponible. Se muestran coincidencias locales dentro de tus tutorados.',
+            style: TextStyle(color: appColors.mutedText, fontSize: 11),
+          ),
+        ],
         const SizedBox(height: 24),
         const QuickFiltersSection(),
         const SizedBox(height: 24),
