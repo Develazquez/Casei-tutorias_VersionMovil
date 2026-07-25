@@ -47,12 +47,17 @@ class ProfileStatusCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(
-                  metric.label,
-                  style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                Expanded(
+                  child: Text(
+                    metric.label,
+                    style: theme.textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Text(
                   '${metric.percentage.toStringAsFixed(1)}%',
                   style: TextStyle(color: color, fontWeight: FontWeight.bold, fontSize: 16),
@@ -104,13 +109,12 @@ class ProfileStatusCard extends StatelessWidget {
   }
 
   Color _getProfileColor(AppThemeColors colors, String profile) {
-    return switch (profile) {
-      'Regular' => colors.profileRegular,
-      'Atípico' => colors.profileAtypical,
-      'Crítico' => colors.profileCritical,
-      'Riesgo moderado' => colors.profileModerateRisk,
-      _ => colors.mutedText,
-    };
+    final lower = profile.toLowerCase();
+    if (lower.contains('crítico') || lower.contains('critico')) return colors.profileCritical;
+    if (lower.contains('riesgo') || lower.contains('moderado')) return colors.profileModerateRisk;
+    if (lower.contains('atípico') || lower.contains('atipico')) return colors.profileAtypical;
+    if (lower.contains('regular')) return colors.profileRegular;
+    return colors.mutedText;
   }
 }
 

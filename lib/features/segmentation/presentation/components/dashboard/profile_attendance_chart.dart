@@ -107,9 +107,11 @@ class _BarItem extends StatelessWidget {
   }
 
   Color _getColor(AppThemeColors appColors, String label) {
-    if (label == 'Regular') return appColors.profileRegular;
-    if (label == 'Atípico') return appColors.profileAtypical;
-    if (label == 'Crítico') return appColors.profileCritical;
-    return appColors.profileModerateRisk;
+    final lower = label.toLowerCase();
+    if (lower.contains('crítico') || lower.contains('critico')) return appColors.profileCritical;
+    if (lower.contains('riesgo') || lower.contains('moderado')) return appColors.profileModerateRisk;
+    if (lower.contains('atípico') || lower.contains('atipico')) return appColors.profileAtypical;
+    if (lower.contains('regular')) return appColors.profileRegular;
+    return appColors.mutedText;
   }
 }

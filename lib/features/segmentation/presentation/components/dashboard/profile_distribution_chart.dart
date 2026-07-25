@@ -131,10 +131,7 @@ class _LegendItem extends StatelessWidget {
   }
 
   Color _getColor(AppThemeColors appColors, String label) {
-    if (label == 'Regular') return appColors.profileRegular;
-    if (label == 'Atípico') return appColors.profileAtypical;
-    if (label == 'Crítico') return appColors.profileCritical;
-    return appColors.profileModerateRisk;
+    return _profileColor(appColors, label);
   }
 }
 
@@ -175,12 +172,18 @@ class _DoughnutPainter extends CustomPainter {
   }
 
   Color _getColor(String label) {
-    if (label == 'Regular') return appColors.profileRegular;
-    if (label == 'Atípico') return appColors.profileAtypical;
-    if (label == 'Crítico') return appColors.profileCritical;
-    return appColors.profileModerateRisk;
+    return _profileColor(appColors, label);
   }
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+Color _profileColor(AppThemeColors colors, String label) {
+  final lower = label.toLowerCase();
+  if (lower.contains('crítico') || lower.contains('critico')) return colors.profileCritical;
+  if (lower.contains('riesgo') || lower.contains('moderado')) return colors.profileModerateRisk;
+  if (lower.contains('atípico') || lower.contains('atipico')) return colors.profileAtypical;
+  if (lower.contains('regular')) return colors.profileRegular;
+  return colors.mutedText;
 }

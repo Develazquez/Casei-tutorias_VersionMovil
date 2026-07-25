@@ -274,13 +274,12 @@ class _StudentListItem extends StatelessWidget {
   }
 
   Color _getProfileColor(AppThemeColors colors, String profile) {
-    return switch (profile) {
-      'Regular' => colors.profileRegular,
-      'Atípico' => colors.profileAtypical,
-      'Crítico' => colors.profileCritical,
-      'Riesgo moderado' => colors.profileModerateRisk,
-      _ => colors.mutedText,
-    };
+    final lower = profile.toLowerCase();
+    if (lower.contains('crítico') || lower.contains('critico')) return colors.profileCritical;
+    if (lower.contains('riesgo') || lower.contains('moderado')) return colors.profileModerateRisk;
+    if (lower.contains('atípico') || lower.contains('atipico')) return colors.profileAtypical;
+    if (lower.contains('regular')) return colors.profileRegular;
+    return colors.mutedText;
   }
 }
 
