@@ -101,17 +101,12 @@ class SegmentationDashboardProvider extends ChangeNotifier {
               final females = group
                   .where((s) => TutorLogicUtils.getStudentGender(s) == 'Mujer')
                   .length;
-              final studentsWithGender = group
-                  .where(
-                    (s) => TutorLogicUtils.getStudentGender(s) != 'Sin dato',
-                  )
-                  .toList();
               return GenerationMetric(
                 generation: entry.key,
                 maleCount: males,
                 femaleCount: females,
-                totalCount: studentsWithGender.length,
-                students: studentsWithGender,
+                totalCount: group.length,
+                students: group,
               );
             })
             .where((metric) => metric.totalCount > 0)

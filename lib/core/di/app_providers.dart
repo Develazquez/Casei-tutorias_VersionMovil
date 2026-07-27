@@ -44,6 +44,7 @@ import '../network/http_client.dart';
 import '../security/firebase_messaging_service.dart';
 import '../security/secure_storage_service.dart';
 import '../storage/token_storage.dart';
+import '../tenant/tenant_provider.dart';
 
 class AppProviders extends StatelessWidget {
   const AppProviders({
@@ -120,6 +121,9 @@ class AppProviders extends StatelessWidget {
             context.read<GetCurrentUserUseCase>(),
             authStateChanges: context.read<WatchAuthStateUseCase>()(),
           ),
+        ),
+        ChangeNotifierProvider<TenantProvider>(
+          create: (_) => TenantProvider(),
         ),
         Provider<SecureVaultRepository>(
           create: (context) =>
