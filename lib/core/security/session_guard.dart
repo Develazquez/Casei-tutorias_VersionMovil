@@ -4,8 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../../features/auth/presentation/providers/auth_provider.dart';
-import '../../navigation/app_navigator.dart';
-import '../../navigation/app_screen.dart';
 import 'secure_storage_service.dart';
 
 class SessionGuard extends StatefulWidget {
@@ -77,9 +75,5 @@ class _SessionGuardState extends State<SessionGuard> {
       DateTime.now().toIso8601String(),
     );
     await auth.logout();
-    AppNavigator.key.currentState?.pushNamedAndRemoveUntil(
-      AppScreen.login.route,
-      (_) => false,
-    );
   }
 }

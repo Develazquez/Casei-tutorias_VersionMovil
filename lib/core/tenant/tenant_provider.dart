@@ -36,7 +36,7 @@ class TenantProvider extends ChangeNotifier {
       }
 
       final appMetadata = user.appMetadata;
-      final tenantId = appMetadata?['tenant_id'] as String?;
+      final tenantId = appMetadata['tenant_id'] as String?;
 
       if (tenantId == null || tenantId.isEmpty) {
         _error = 'El usuario no tiene un tenant asignado.';

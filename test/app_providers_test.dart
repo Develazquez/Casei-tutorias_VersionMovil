@@ -11,6 +11,7 @@ import 'package:casei_tutorias/features/segmentation/presentation/providers/segm
 import 'package:casei_tutorias/features/tutor_navigation/presentation/providers/tutor_navigation_provider.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -36,6 +37,7 @@ void main() {
         child: Builder(
           builder: (context) {
             context.read<AuthProvider>();
+            context.read<GoRouter>();
             context.read<SecureVaultProvider>();
             context.read<SegmentationProvider>();
             context.read<SegmentationDashboardProvider>();

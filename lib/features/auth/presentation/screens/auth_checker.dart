@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -34,8 +35,7 @@ class _AuthCheckerState extends State<AuthChecker> {
     }
 
     if (!mounted) return;
-    Navigator.pushReplacementNamed(
-      context,
+    context.go(
       auth.isAuthenticated && auth.user?.isTutor == true
           ? AppScreen.segmentation.route
           : AppScreen.login.route,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../core/util/view_state.dart';
@@ -159,10 +160,7 @@ class _RegisterPageState extends State<RegisterPage> {
                   TextButton(
                     onPressed: isLoading
                         ? null
-                        : () => Navigator.pushReplacementNamed(
-                            context,
-                            AppScreen.login.route,
-                          ),
+                        : () => context.go(AppScreen.login.route),
                     child: const Text('Ya tengo cuenta'),
                   ),
                   if (_localError != null || auth.errorMessage != null) ...[
@@ -248,9 +246,9 @@ class _RegisterPageState extends State<RegisterPage> {
           ),
         ),
       );
-      Navigator.pushReplacementNamed(context, AppScreen.login.route);
+      context.go(AppScreen.login.route);
       return;
     }
-    Navigator.pushReplacementNamed(context, AppScreen.segmentation.route);
+    context.go(AppScreen.segmentation.route);
   }
 }

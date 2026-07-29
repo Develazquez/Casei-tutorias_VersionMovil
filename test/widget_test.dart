@@ -6,6 +6,8 @@ import 'package:casei_tutorias/features/auth/domain/usecases/logout_usecase.dart
 import 'package:casei_tutorias/features/auth/domain/usecases/register_usecase.dart';
 import 'package:casei_tutorias/features/auth/presentation/screens/login_page.dart';
 import 'package:casei_tutorias/features/auth/presentation/providers/auth_provider.dart';
+import 'package:casei_tutorias/navigation/app_router.dart';
+import 'package:casei_tutorias/navigation/app_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -40,6 +42,53 @@ void main() {
     expect(find.text('CACEI - Tutorías'), findsOneWidget);
     expect(find.text('Dashboard de segmentación académica'), findsOneWidget);
     expect(find.text('Entrar'), findsOneWidget);
+  });
+
+  testWidgets('redirige rutas protegidas al login sin sesión', (
+    WidgetTester tester,
+  ) async {
+    const securityChannel = MethodChannel(
+      'mx.edu.upchiapas.casei_tutorias/security',
+    );
+    TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+        .setMockMethodCallHandler(securityChannel, (_) async => null);
+    addTearDown(
+      () => TestDefaultBinaryMessengerBinding.instance.defaultBinaryMessenger
+          .setMockMethodCallHandler(securityChannel, null),
+    );
+
+    final repository = _FakeAuthRepository();
+    final authProvider = AuthProvider(
+      LoginUseCase(repository),
+      RegisterUseCase(repository),
+      LogoutUseCase(repository),
+      GetCurrentUserUseCase(repository),
+    );
+    final router = AppRouter.create(authProvider);
+    addTearDown(router.dispose);
+    addTearDown(authProvider.dispose);
+
+    await tester.pumpWidget(
+      ChangeNotifierProvider.value(
+        value: authProvider,
+        child: MaterialApp.router(routerConfig: router),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      AppScreen.login.route,
+    );
+
+    router.go(AppScreen.secureVault.route);
+    await tester.pumpAndSettle();
+
+    expect(
+      router.routeInformationProvider.value.uri.path,
+      AppScreen.login.route,
+    );
+    expect(find.byType(LoginPage), findsOneWidget);
   });
 }
 

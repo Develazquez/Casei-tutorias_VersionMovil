@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import 'core/security/security_shell.dart';
 import 'core/security/secure_storage_service.dart';
 import 'core/theme/theme_casei_material3.dart';
 import 'features/auth/presentation/components/auth_callback_coordinator.dart';
-import 'navigation/app_navigator.dart';
-import 'navigation/app_router.dart';
 
 class CaseiTutoriasApp extends StatelessWidget {
   const CaseiTutoriasApp({super.key});
@@ -19,8 +18,8 @@ class CaseiTutoriasApp extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     final theme = MaterialTheme(textTheme);
 
-    return MaterialApp(
-      navigatorKey: AppNavigator.key,
+    return MaterialApp.router(
+      routerConfig: context.read<GoRouter>(),
       title: 'CACEI Tutorías',
       debugShowCheckedModeBanner: false,
       theme: theme.light(),
@@ -34,8 +33,6 @@ class CaseiTutoriasApp extends StatelessWidget {
           ),
         );
       },
-      initialRoute: AppRouter.initialRoute,
-      routes: AppRouter.routes,
     );
   }
 }

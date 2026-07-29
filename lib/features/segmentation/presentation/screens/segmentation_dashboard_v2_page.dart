@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
 import '../../../../navigation/app_screen.dart';
@@ -7,7 +8,6 @@ import '../../../tutor_navigation/presentation/components/tutor_navigation_drawe
 import '../components/dashboard/segmentation_dashboard_header.dart';
 import '../components/dashboard/segmentation_dashboard_view.dart';
 import '../components/search/segmentation_search_view.dart';
-import '../components/tutorados/tutorados_view.dart';
 import '../providers/segmentation_dashboard_provider.dart';
 import '../providers/segmentation_navigation_provider.dart';
 import '../providers/segmentation_provider.dart';
@@ -35,11 +35,7 @@ class _SegmentationDashboardV2PageState
     if (auth.user?.isTutor != true) {
       await auth.logout();
       if (!mounted) return;
-      Navigator.pushNamedAndRemoveUntil(
-        context,
-        AppScreen.login.route,
-        (route) => false,
-      );
+      context.go(AppScreen.login.route);
       return;
     }
 
@@ -84,7 +80,6 @@ class _SegmentationDashboardV2PageState
                     children: const [
                       SegmentationDashboardView(),
                       SegmentationSearchView(),
-                      TutoradosView(),
                     ],
                   ),
                 ),

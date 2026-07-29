@@ -1,4 +1,5 @@
 import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,6 +41,7 @@ import '../../features/segmentation/presentation/providers/segmentation_navigati
 import '../../features/segmentation/presentation/providers/segmentation_provider.dart';
 import '../../features/segmentation/presentation/providers/segmentation_search_provider.dart';
 import '../../features/tutor_navigation/presentation/providers/tutor_navigation_provider.dart';
+import '../../navigation/app_router.dart';
 import '../network/http_client.dart';
 import '../security/firebase_messaging_service.dart';
 import '../security/secure_storage_service.dart';
@@ -122,9 +124,11 @@ class AppProviders extends StatelessWidget {
             authStateChanges: context.read<WatchAuthStateUseCase>()(),
           ),
         ),
-        ChangeNotifierProvider<TenantProvider>(
-          create: (_) => TenantProvider(),
+        Provider<GoRouter>(
+          create: (context) => AppRouter.create(context.read<AuthProvider>()),
+          dispose: (_, router) => router.dispose(),
         ),
+        ChangeNotifierProvider<TenantProvider>(create: (_) => TenantProvider()),
         Provider<SecureVaultRepository>(
           create: (context) =>
               SecureVaultRepositoryImpl(context.read<SecureStorageService>()),
@@ -165,9 +169,8 @@ class AppProviders extends StatelessWidget {
           ),
         ),
         Provider<TutorSupabaseDataSource>(
-          create: (context) => TutorSupabaseDataSource(
-            context.read<SupabaseClient>(),
-          ),
+          create: (context) =>
+              TutorSupabaseDataSource(context.read<SupabaseClient>()),
         ),
         Provider<TutorDashboardRepository>(
           create: (context) => TutorDashboardRepositoryImpl(
@@ -176,19 +179,16 @@ class AppProviders extends StatelessWidget {
           ),
         ),
         Provider<GetTutorStatusUseCase>(
-          create: (context) => GetTutorStatusUseCase(
-            context.read<TutorDashboardRepository>(),
-          ),
+          create: (context) =>
+              GetTutorStatusUseCase(context.read<TutorDashboardRepository>()),
         ),
         Provider<GetTutorStudentsUseCase>(
-          create: (context) => GetTutorStudentsUseCase(
-            context.read<TutorDashboardRepository>(),
-          ),
+          create: (context) =>
+              GetTutorStudentsUseCase(context.read<TutorDashboardRepository>()),
         ),
         Provider<GetTutorSummaryUseCase>(
-          create: (context) => GetTutorSummaryUseCase(
-            context.read<TutorDashboardRepository>(),
-          ),
+          create: (context) =>
+              GetTutorSummaryUseCase(context.read<TutorDashboardRepository>()),
         ),
         Provider<SearchTutorStudentsUseCase>(
           create: (context) => SearchTutorStudentsUseCase(
@@ -229,11 +229,10 @@ class AppProviders extends StatelessWidget {
               SegmentationModelProvider(context.read<SegmentationProvider>()),
         ),
         ChangeNotifierProvider<SegmentationSearchProvider>(
-          create: (context) =>
-              SegmentationSearchProvider(
-                context.read<SegmentationProvider>(),
-                context.read<AuthProvider>(),
-              ),
+          create: (context) => SegmentationSearchProvider(
+            context.read<SegmentationProvider>(),
+            context.read<AuthProvider>(),
+          ),
         ),
         ChangeNotifierProvider<SegmentationNavigationProvider>(
           create: (_) => SegmentationNavigationProvider(),

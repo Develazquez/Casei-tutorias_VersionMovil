@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import '../../../../core/theme/theme_casei_material3.dart';
-import '../../../../navigation/app_screen.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../models/tutor_navigation_item.dart';
 import '../providers/tutor_navigation_provider.dart';
@@ -38,7 +38,9 @@ class TutorNavigationDrawer extends StatelessWidget {
               leading: Icon(
                 isSelected ? item.selectedIconData : item.iconData,
                 color: item.enabled
-                    ? (isSelected ? theme.colorScheme.primary : theme.colorScheme.onSurfaceVariant)
+                    ? (isSelected
+                          ? theme.colorScheme.primary
+                          : theme.colorScheme.onSurfaceVariant)
                     : appColors.mutedText,
               ),
               title: Text(
@@ -59,9 +61,17 @@ class TutorNavigationDrawer extends StatelessWidget {
             ),
           );
         }),
-        Divider(indent: 28, endIndent: 28, color: theme.colorScheme.outlineVariant),
+        Divider(
+          indent: 28,
+          endIndent: 28,
+          color: theme.colorScheme.outlineVariant,
+        ),
         const TutorDrawerProfile(),
-        Divider(indent: 28, endIndent: 28, color: theme.colorScheme.outlineVariant),
+        Divider(
+          indent: 28,
+          endIndent: 28,
+          color: theme.colorScheme.outlineVariant,
+        ),
         Padding(
           padding: const EdgeInsets.fromLTRB(28, 0, 28, 16),
           child: ListTile(
@@ -109,7 +119,7 @@ class TutorNavigationDrawer extends StatelessWidget {
     if (item.route != null) {
       Navigator.of(context).pop();
       if (item.id == 'dashboard') {
-        Navigator.pushReplacementNamed(context, item.route!);
+        context.go(item.route!);
       }
     }
   }
@@ -128,15 +138,13 @@ class TutorNavigationDrawer extends StatelessWidget {
           TextButton(
             onPressed: () async {
               final auth = context.read<AuthProvider>();
+              Navigator.of(context).pop();
               await auth.logout();
-              if (!context.mounted) return;
-              Navigator.pushNamedAndRemoveUntil(
-                context,
-                AppScreen.login.route,
-                (route) => false,
-              );
             },
-            child: Text('Confirmar', style: TextStyle(color: Theme.of(context).colorScheme.error)),
+            child: Text(
+              'Confirmar',
+              style: TextStyle(color: Theme.of(context).colorScheme.error),
+            ),
           ),
         ],
       ),

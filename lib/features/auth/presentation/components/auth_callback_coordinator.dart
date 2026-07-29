@@ -1,7 +1,7 @@
 import 'package:flutter/widgets.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 
-import '../../../../navigation/app_navigator.dart';
 import '../../../../navigation/app_screen.dart';
 import '../providers/auth_provider.dart';
 
@@ -39,10 +39,9 @@ class _AuthCallbackCoordinatorState extends State<AuthCallbackCoordinator> {
     _navigationScheduled = true;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _navigationScheduled = false;
-      AppNavigator.key.currentState?.pushNamedAndRemoveUntil(
-        AppScreen.segmentation.route,
-        (_) => false,
-      );
+      if (mounted) {
+        context.read<GoRouter>().go(AppScreen.segmentation.route);
+      }
     });
   }
 

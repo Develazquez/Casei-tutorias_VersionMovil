@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -171,10 +172,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                                       .read<TenantProvider>()
                                       .loadTenant(Supabase.instance.client);
                                   if (!mounted) return;
-                                  Navigator.pushReplacementNamed(
-                                    context,
-                                    AppScreen.segmentation.route,
-                                  );
+                                  context.go(AppScreen.segmentation.route);
                                 },
                           style: FilledButton.styleFrom(
                             backgroundColor: theme.colorScheme.primary,
@@ -198,10 +196,7 @@ class _LoginPageState extends State<LoginPage> with WidgetsBindingObserver {
                       TextButton(
                         onPressed: auth.state == ViewState.loading
                             ? null
-                            : () => Navigator.pushNamed(
-                                context,
-                                AppScreen.register.route,
-                              ),
+                            : () => context.push(AppScreen.register.route),
                         child: Text(
                           'Crear cuenta institucional',
                           style: TextStyle(color: theme.colorScheme.primary),
