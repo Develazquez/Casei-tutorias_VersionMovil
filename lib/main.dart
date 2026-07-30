@@ -1,3 +1,5 @@
+import 'package:device_preview/device_preview.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -11,7 +13,12 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   final missingConfiguration = AppConstants.missingRuntimeConfiguration();
   if (missingConfiguration.isNotEmpty) {
-    runApp(ConfigurationErrorApp(missing: missingConfiguration));
+    runApp(
+      DevicePreview(
+        enabled: kDebugMode,
+        builder: (_) => ConfigurationErrorApp(missing: missingConfiguration),
+      ),
+    );
     return;
   }
 
@@ -30,11 +37,14 @@ Future<void> main() async {
   }
 
   runApp(
-    AppProviders(
-      supabaseClient: Supabase.instance.client,
-      secureStorage: secureStorage,
-      messagingService: messagingService,
-      child: const CaseiTutoriasApp(),
+    DevicePreview(
+      enabled: kDebugMode,
+      builder: (_) => AppProviders(
+        supabaseClient: Supabase.instance.client,
+        secureStorage: secureStorage,
+        messagingService: messagingService,
+        child: const CaseiTutoriasApp(),
+      ),
     ),
   );
 }

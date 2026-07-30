@@ -1,3 +1,4 @@
+import 'package:device_preview/device_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 import 'package:provider/provider.dart';
@@ -20,16 +21,20 @@ class CaseiTutoriasApp extends StatelessWidget {
 
     return MaterialApp.router(
       routerConfig: context.read<GoRouter>(),
+      locale: DevicePreview.locale(context),
       title: 'CACEI Tutorías',
       debugShowCheckedModeBanner: false,
       theme: theme.light(),
       darkTheme: theme.dark(),
       themeMode: ThemeMode.system,
       builder: (context, child) {
-        return AuthCallbackCoordinator(
-          child: SecurityShell(
-            secureStorage: context.read<SecureStorageService>(),
-            child: child ?? const SizedBox.shrink(),
+        return DevicePreview.appBuilder(
+          context,
+          AuthCallbackCoordinator(
+            child: SecurityShell(
+              secureStorage: context.read<SecureStorageService>(),
+              child: child ?? const SizedBox.shrink(),
+            ),
           ),
         );
       },
